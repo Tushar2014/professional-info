@@ -1,6 +1,6 @@
 # resume-site
 
-Personal site: resume, projects, writing. Astro 7, static output.
+Personal site: resume and writing. Astro 7, static output.
 
 - `npm run dev` — local dev server
 - `npm run build` — type check, then static build to `dist/`

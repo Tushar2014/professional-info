@@ -31,9 +31,8 @@ const { class: className = '', headings = [], meta = [], railLabel = 'Article re
 
 /*
   A general Markdown container, plus the two column article body it sits in. It
-  is consumed by /projects/<slug> and by /blog/<slug>, so nothing in here is
-  project specific and nothing in here knows what collection produced the body
-  it wraps.
+  wraps the rendered body of a content entry and knows nothing about which
+  collection produced it.
 
   Why the rail lives here rather than in each page: it is the same instrument on
   both templates, its CSS is 100 lines and its script is one behaviour, so

@@ -37,9 +37,8 @@ const { rows, dense = false, keyWidth = '6.5rem', class: className = '' } = Astr
 export function wrapPoints(value: string): string[] {
   // The narrowest value column anywhere on the site is 158px, at a 320px
   // viewport, and 158px holds 18 characters at the mono figure step. A token
-  // that short can never be forced to break, so splitting it would add markup
-  // that can never do anything: the /projects style values on the 404 readout
-  // are the case this guard keeps clean.
+  // that short can never be forced to break, so splitting it would only add
+  // markup that can never do anything.
   if (value.length <= 18 || /\s/.test(value)) return [value]
   return value.split(/(?<=\/)|(?=@)/)
 }

@@ -4,7 +4,6 @@ import Layout from '../../layouts/Layout.astro'
 import NoteRow from '../../components/NoteRow.astro'
 import CountLine from '../../components/CountLine.astro'
 import PullQuote from '../../components/PullQuote.astro'
-import Button from '../../components/Button.astro'
 import { page } from '../../lib/url'
 
 // Drafts are withheld from a production build only, so a note in progress is
@@ -88,7 +87,6 @@ const BAND = {
         delete. The band above is the unit that does not depend on entry count.
       -->
       <div class="notes-foot">
-        <Button href={page('/projects')} label="Case studies" variant="secondary" />
         <p class="micro notes-rss"><a href={page('/rss.xml')}>SUBSCRIBE VIA RSS</a></p>
       </div>
     </div>

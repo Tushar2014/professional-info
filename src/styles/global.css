@@ -961,18 +961,6 @@
     letter-spacing: var(--text-figure-sm--letter-spacing);
   }
 
-  /* RequestPath footer: the same dl laid out as one horizontal strip. */
-  .kv-inline {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 1.5rem;
-  }
-  .kv-inline .kv-row {
-    border-bottom: 0;
-    grid-template-columns: auto auto;
-    gap: 0.5rem;
-  }
-
   /* ---------- CopyButton ---------- */
 
   /* 24 by 24 is the WCAG 2.2 SC 2.5.8 floor and the button sits about 12px from
@@ -1578,7 +1566,7 @@
     stroke-width: 1;
     opacity: 0.42;
   }
-  /* Exactly .rp-bar in SVG: solid bar fill, 1px steel outline. */
+  /* Solid bar fill, 1px steel outline. */
   .pl-bar {
     fill: var(--color-steel-bar);
     stroke: var(--color-steel);
@@ -1651,174 +1639,6 @@
   .panel[data-interactive]:hover .pl-ring,
   .panel[data-interactive]:focus-within .pl-ring {
     transform: scale(1.15);
-  }
-
-  /* ---------- RequestPath ---------- */
-
-  .rp-titlebar {
-    height: 44px;
-    border-bottom: 1px solid var(--color-hairline);
-    padding-inline: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-  }
-  .rp-titlebar h3,
-  .rp-titlebar p {
-    margin: 0;
-  }
-  .rp-axis {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 12px 20px 0;
-  }
-  .rp-axis p {
-    margin: 0;
-  }
-  .rp-body {
-    position: relative;
-    padding: 8px 20px 16px;
-  }
-  .rp-grid {
-    display: none;
-  }
-  .rp-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: center;
-    row-gap: 4px;
-    padding-block: 6px;
-  }
-  .rp-row .label {
-    margin: 0;
-  }
-  .rp-authored .label {
-    color: var(--color-accent);
-  }
-  .rp-track {
-    position: relative;
-    height: 20px;
-  }
-  .rp-bar {
-    position: absolute;
-    top: 50%;
-    height: 10px;
-    margin-top: -5px;
-    border-radius: 3px;
-    background: var(--color-steel-bar);
-    box-shadow: inset 0 0 0 1px var(--color-steel);
-  }
-  .rp-bar[data-authored='true'] {
-    background: var(--color-accent-bar);
-    box-shadow: inset 0 0 0 1px var(--color-accent);
-  }
-  .rp-bar[data-weight='wrapper'] {
-    height: 6px;
-    margin-top: -3px;
-  }
-  .span-tail {
-    position: absolute;
-    top: 50%;
-    border-top: 2px dashed var(--color-steel);
-    opacity: 0.5;
-  }
-  .rp-note {
-    margin: 0.25rem 0 0.75rem;
-  }
-  .rp-footer {
-    height: auto;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    border-top: 1px solid var(--color-hairline);
-    padding: 8px 20px;
-  }
-  .rp-footnote {
-    margin: 1rem 0 0;
-    color: var(--color-muted);
-    max-width: 66ch;
-  }
-  @media (min-width: 56.25rem) {
-    .rp-row {
-      grid-template-columns: 152px minmax(0, 1fr);
-      column-gap: 0;
-      row-gap: 0;
-    }
-    .rp-note {
-      padding-left: 152px;
-    }
-    .rp-grid {
-      display: block;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: calc(20px + 152px);
-      right: 20px;
-      pointer-events: none;
-    }
-    .rp-grid i {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 1px;
-      background: var(--color-hairline);
-    }
-    .rp-axis {
-      padding-left: calc(20px + 152px);
-    }
-  }
-
-  /* ---------- ProjectCard ---------- */
-
-  .project-card {
-    height: 100%;
-  }
-  .project-card .panel {
-    height: 100%;
-  }
-  .project-featured-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.75rem;
-  }
-  @media (min-width: 70rem) {
-    .project-featured-grid {
-      grid-template-columns: 7fr 5fr;
-      gap: 2.5rem;
-      align-items: start;
-    }
-  }
-  .project-body > * + * {
-    margin-top: 0.875rem;
-  }
-  .project-body h3 {
-    margin: 0;
-  }
-  .project-body h3 a {
-    text-decoration-color: var(--color-hairline-strong);
-  }
-  .project-summary {
-    color: var(--color-muted);
-  }
-  .project-card-band {
-    margin-bottom: 1.25rem;
-    border-radius: var(--radius-chip);
-    overflow: hidden;
-  }
-
-  /* CONSUMER: the 2 up grid for non featured cards. */
-  .card-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-  }
-  @media (min-width: 56.25rem) {
-    .card-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 2rem;
-    }
   }
 
   /* ---------- NoteRow ---------- */
