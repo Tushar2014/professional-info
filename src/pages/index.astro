@@ -10,7 +10,6 @@ import LedgerRow from '../components/LedgerRow.astro'
 import NoteRow from '../components/NoteRow.astro'
 import Panel from '../components/Panel.astro'
 import Pill from '../components/Pill.astro'
-import Plate from '../components/Plate.astro'
 import PullQuote from '../components/PullQuote.astro'
 import RoleEntry from '../components/RoleEntry.astro'
 import SectionHead from '../components/SectionHead.astro'
@@ -219,11 +218,6 @@ const contactRows = [
       <div class="ledger-grid reveal">
         {LEDGER.map((row) => <LedgerRow label={row.label} figure={row.figure} context={row.context} />)}
       </div>
-
-      <p class="text-small outcomes-attribution">
-        Measured at Soroco, 2020 to 2026. Every figure here is from the resume I circulate. My current
-        work is described without numbers.
-      </p>
     </div>
   </section>
 
@@ -394,12 +388,7 @@ const contactRows = [
   </section>
 
   {/* ------------------------------------------------------------------
-      #credentials. Two square flat panels, separated by rules, then the
-      instrument band. The last third of this page had no imagery, no
-      accent and nothing at scale, so it decayed into ruled grey rows.
-      The band is the site's own artwork at poster width: it carries the
-      only accent marks in this section and the only figure of any size
-      between #outcomes and the footer.
+      #credentials. Two square flat panels, separated by rules.
       ------------------------------------------------------------------ */}
   <section id="credentials" class="credentials" aria-labelledby="credentials-heading">
     <div class="shell">
@@ -425,14 +414,6 @@ const contactRows = [
             <Button href={page('/resume')} label="Read the resume" variant="secondary" />
           </Panel>
         </div>
-      </div>
-
-      {/* Decorative, and captionless on purpose: a plate figure with no
-          caption is aria-hidden in full, so nothing is announced twice. The
-          head strip and the foot readout still declare on screen that the
-          drawing is synthetic and carries no measured data. */}
-      <div class="cred-band reveal">
-        <Plate slug="capability-readout" variant="banner" />
       </div>
     </div>
   </section>
@@ -640,12 +621,6 @@ const contactRows = [
     margin: 3rem 0 0.5rem;
   }
 
-  .outcomes-attribution {
-    max-width: 60ch;
-    margin: 2rem 0 0;
-    color: var(--color-muted);
-  }
-
   /* ==================================================================
      #layers
      ================================================================== */
@@ -822,17 +797,10 @@ const contactRows = [
     color: var(--color-muted);
   }
 
-  .cred-band {
-    margin-top: 3rem;
-  }
-
   @media (min-width: 56.25rem) {
     .cred-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: 2.5rem;
-    }
-    .cred-band {
-      margin-top: 4rem;
     }
   }
 

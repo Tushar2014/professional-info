@@ -6,9 +6,7 @@ interface Props {
   /**
    * Which route family the current page belongs to. It drives a colour-only
    * "you are in this area" hint on the matching route link, and nothing else:
-   * aria-current is derived from the pathname below and never from this prop,
-   * because a case study is not the /projects page and must not claim to be.
-   * All four values are mapped, including 'resume'.
+   * aria-current is derived from the pathname below and never from this prop.
    */
   activeNav?: 'work' | 'writing' | 'resume' | 'none'
 }
@@ -43,10 +41,9 @@ const sections = [
 ]
 
 /*
-  Route links. The header previously offered no way at all to reach /projects,
-  /blog or /resume, which made the footer the only route affordance on a site
-  whose homepage is one long scroll. Three links, two label lengths, and the
-  short form is what ships below 1400px so the bar still fits a 320px phone.
+  Route links. The notes and the resume, reachable from the header at every
+  width. Two label lengths, and the short form is what ships below 1400px so
+  the bar still fits a 320px phone.
 */
 const routes = [
   { href: page('/blog'), short: 'NOTES', full: 'NOTES', area: 'writing' },
@@ -72,8 +69,8 @@ const routes = [
                 anchors and the scroll spy in motion.ts sets aria-current
                 ="location" on whichever section is on screen. Everywhere else
                 the href is /#id, which is not the current pathname, so marking
-                one of them current was the defect: /projects announced /#work
-                as the current page while the reader was on /projects.
+                one of them current was the defect: a route link marked one of
+                the homepage's anchors current while the reader was on a route.
               */}
               <a class="micro nav-link" href={`${prefix}#${section.id}`} data-section={section.id}>
                 {section.label}

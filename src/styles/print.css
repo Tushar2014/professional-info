@@ -330,13 +330,4 @@
     padding: 1pt 4pt;
     border-color: #b0b0b0;
   }
-
-  .cv .cv-attribution {
-    margin-top: 8pt;
-  }
-
-  .cv .cv-close {
-    margin-top: 12pt;
-    padding-top: 6pt;
-  }
 }

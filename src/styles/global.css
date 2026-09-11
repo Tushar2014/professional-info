@@ -568,8 +568,8 @@
     }
   }
   /*
-    Two navs share the bar. .site-nav is the seven in page section anchors and
-    .site-routes is the three routes. The section anchors are the ones that give
+    Two navs share the bar. .site-nav is the six in page section anchors and
+    .site-routes is the two routes. The section anchors are the ones that give
     way as the bar narrows, because scrolling already reaches every section and
     nothing but the header reaches another page.
   */
@@ -630,14 +630,13 @@
   }
   /* A colour only hint that the reader is inside this route's family, set from
      Layout's activeNav. Deliberately not aria-current and deliberately without
-     the indicator bar: a case study is not the /projects page, so it may not
-     announce itself as one, and the bar is reserved for what actually is. */
+     the indicator bar, which is reserved for the route that actually is. */
   .nav-link[data-area] {
     color: var(--color-text);
   }
-  /* The four wide section anchors join the bar at 1400px. Below that the bar
-     carries Work, Writing, Contact and the three routes, which is what fits a
-     900px header once the route nav shares it. */
+/* The four wide section anchors join the bar at 1400px. Below that the bar
+       carries Writing, Contact and the two routes, which is what fits a 900px
+       header once the route nav shares it. */
   .nav-item-wide {
     display: none;
   }
@@ -648,9 +647,9 @@
   }
 
   /*
-    The route nav. Three links, present at every width down to 320px, so a reader
-    on /blog can reach /projects and /resume from the header rather than only from
-    the footer. The section anchors are what go on a phone, not these: an in page
+    The route nav. Two links, present at every width down to 320px, so a reader
+    can reach the notes and the resume from the header rather than only from the
+    footer. The section anchors are what go on a phone, not these: an in page
     anchor duplicates scrolling, and a route is the only thing the header can
     offer that scrolling cannot.
   */
@@ -684,7 +683,7 @@
       gap: 1.125rem;
     }
   }
-  /* Two label lengths for two of the three links. display: none takes the unused
+  /* Two label lengths for the two route links. display: none takes the unused
      one out of the accessibility tree as well as out of the layout, so each link
      has exactly one accessible name at every width. */
   .route-full {
@@ -1862,8 +1861,8 @@
   before first paint, which means it is present whether or not the motion module
   ever loads, parses or runs, so keying a hidden pre-state on it hides content
   that nothing is left alive to reveal. That is what happened: with
-  IntersectionObserver removed, 13 .reveal blocks on / and 3 on /projects sat at
-  opacity 0 forever and /projects rendered as header plus footer over a void.
+  IntersectionObserver removed, the .reveal blocks sat at opacity 0 forever
+  and every route rendered as header plus footer over a void.
 
   Every pre-state here is keyed on .is-armed, and .is-armed is added by
   src/scripts/motion.ts and by nothing else, immediately after the observer that

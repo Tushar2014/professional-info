@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import KeyValue, { type KeyValueRow } from '../components/KeyValue.astro'
-import Plate from '../components/Plate.astro'
 import { page } from '../lib/url'
 
 const routes: KeyValueRow[] = [
@@ -29,17 +28,6 @@ const routes: KeyValueRow[] = [
           <KeyValue rows={routes} keyWidth="9rem" />
         </div>
       </div>
-    </div>
-    <!--
-      Decorative, and deliberately not wrapped in .shell so it runs to the viewport
-      edge and is clipped by the section. Dimmed to 40 percent so it reads as
-      housing rather than as content. No aria-hidden here: a plate passed no
-      caption carries aria-hidden on its own figure, so repeating it on this
-      wrapper would hide the same subtree twice. The wrapper stays because it owns
-      the opacity, the pointer-events and the height override.
-    -->
-    <div class="nf-plate">
-      <Plate slug="404" variant="banner" />
     </div>
   </section>
 </Layout>
@@ -73,20 +61,5 @@ const routes: KeyValueRow[] = [
     margin-top: 2.5rem;
     max-width: 26rem;
     border-top: 1px solid var(--color-edge);
-  }
-  /* At its own 16 by 7 ratio a banner plate is 630px tall on a 1440px screen,
-     which on this page would push the copy off the fold and read as a broken
-     table. width: 100% from .plate plus an explicit height makes both axes
-     definite, so aspect-ratio is ignored and preserveAspectRatio="xMidYMid slice"
-     crops the field to a centred foot band rather than squashing it: the grid,
-     the lane rules, the comb and the intervals all keep their true proportions. */
-  .nf-plate {
-    margin-top: clamp(2.5rem, 6vh, 4rem);
-    opacity: 0.4;
-    pointer-events: none;
-  }
-  .nf-plate :global(.plate) {
-    aspect-ratio: auto !important;
-    height: clamp(110px, 16vh, 180px);
   }
 </style>
