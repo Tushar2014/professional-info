@@ -1,0 +1,15 @@
+---
+interface Props {
+  label: string
+  figure: string
+  context: string
+}
+
+const { label, figure, context } = Astro.props
+---
+
+<div class="ledger-row">
+  <p class="label">{label}</p>
+  <p class="ledger-figure">{figure}</p>
+  <p class="text-small ledger-context">{context}</p>
+</div>

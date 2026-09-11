@@ -1,0 +1,17 @@
+---
+interface Props {
+  count: number
+  singular: string
+  plural: string
+  min?: number
+}
+
+const { count, singular, plural, min = 3 } = Astro.props
+
+// Nothing on this site narrates how little content exists. Below the threshold
+// this component renders nothing at all, which is why no listing prints a count
+// today and every listing is correct at five entries without a second pass.
+const show = count >= min
+---
+
+{show && <p class="micro count-line">{count} {count === 1 ? singular : plural}</p>}

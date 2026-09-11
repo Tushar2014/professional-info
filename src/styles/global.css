@@ -1,0 +1,2118 @@
+@import 'tailwindcss' source(none);
+
+/*
+  Explicit content sources. Tailwind 4's automatic detection roots at the repo,
+  which pulled tests/ in and compiled the Playwright selector
+  [data-project]:visible into a junk utility, and kept the deleted v1 components
+  alive by scanning their dead class names. Only src/ holds markup, so only src/
+  is scanned. This is the CSS-first equivalent of a content array: there is no
+  tailwind.config.js and there never will be.
+*/
+@source '../**/*.{astro,html,ts,md,mdx}';
+
+/*
+  ============================================================================
+  ACCENT BUDGET. Read this before you type var(--color-accent).
+  --color-accent (#EE4A94) is permitted in exactly seven places on this site:
+    1. the single word "underneath" inside the one h1
+    2. the two authored spans in RequestPath, their labels and their end caps
+    3. the figure in every measured-outcome cell, and that cell's meter fill
+    4. the fill of the primary button, with --color-ground as its label colour
+    5. inside a plate field, three marks on one channel and nowhere else: that
+       channel's interval and its two 2px end caps, the hollow ring on that
+       channel's extremum vertex, and that ring's crosshair. Portrait and banner
+       variants only. Zero accent on the card variant and zero on the monogram.
+    6. the current-role marker and the current-role 2px left edge in #experience
+    7. the operative clause of the one PullQuote band, set through its accent
+       prop. Seventh and last, added because the final third of the homepage
+       carried no accent at all, and it is the same device as slot 1: one clause,
+       one colour, one meaning. There is one band on the site and there is no
+       eighth slot.
+  It is BANNED in: body copy, any heading other than that one h1 word, any
+  section background, focus rings, link underlines, nav indicators, pill borders,
+  icon strokes, the scroll progress rail, and any two adjacent cells of the same
+  cluster. Focus rings and nav indicators use --color-steel. If the accent turns
+  up in a seventh place, remove it. Do not rebalance the palette.
+  ============================================================================
+*/
+
+@theme {
+  /* Ground and surfaces. Blue-black, so panels separate by temperature as well
+     as by lightness and the page reads as instrument housing, not as void. */
+  --color-ground: #0a0c10;
+  --color-surface: #10141b;
+  --color-raised: #171c25;
+  --color-plate-ground: #0d1016;
+
+  /* Edges. --color-edge is decorative hairline only (1.28:1 on surface).
+     --color-edge-control is the ONLY border permitted as the sole boundary of
+     an interactive control: 3.91:1 on ground, 3.68:1 on surface, 3.41:1 on
+     raised, so it clears WCAG 1.4.11 everywhere it can appear. */
+  --color-edge: #232a36;
+  --color-edge-control: #61708a;
+
+  /* Text. */
+  --color-text: #e8edf5;
+  --color-muted: #8a96a8;
+
+  /* Two-hue data palette. Magenta is the commanded path, the thing a human
+     decided. Steel is ambient system data. */
+  --color-accent: #ee4a94;
+  --color-steel: #79a9ff;
+
+  /* Solid bar fills, precomputed so a meaningful graphic clears 3:1 against
+     its own panel. Never draw a chart bar with an alpha fill. */
+  --color-accent-bar: #ab3a70;
+  --color-steel-bar: #4a6698;
+
+  /* The second plate ink. The deep trace and the envelope fill. --color-steel is
+     the bright trace, so there is no second name for it. */
+  --color-ink-b: #46618f;
+
+  /* Interior hairlines and chart gridlines. Kept this faint so dense blocks do
+     not turn into a cage. */
+  --color-hairline: rgba(232, 237, 245, 0.08);
+  --color-hairline-strong: rgba(232, 237, 245, 0.14);
+
+  /* Fonts. Two families. Chivo carries every heading and all running copy.
+     Azeret Mono carries every number, key, label, chip, tick, date and code. */
+  --font-display: var(--font-chivo), system-ui, sans-serif;
+  --font-mono: var(--font-azeret), ui-monospace, monospace;
+
+  /* Type scale. Every step is defined here and nowhere else. */
+  --text-h1: clamp(2.25rem, 1.1rem + 5.75vw, 6.25rem);
+  --text-h1--line-height: 0.92;
+  --text-h1--letter-spacing: -0.035em;
+  --text-h1--font-weight: 900;
+
+  --text-h2: clamp(1.875rem, 1.3rem + 2.4vw, 3.25rem);
+  --text-h2--line-height: 1.03;
+  --text-h2--letter-spacing: -0.028em;
+  --text-h2--font-weight: 800;
+
+  --text-h3: clamp(1.25rem, 1.05rem + 0.85vw, 1.625rem);
+  --text-h3--line-height: 1.18;
+  --text-h3--letter-spacing: -0.015em;
+  --text-h3--font-weight: 700;
+
+  --text-h4: 1.0625rem;
+  --text-h4--line-height: 1.3;
+  --text-h4--letter-spacing: -0.01em;
+  --text-h4--font-weight: 700;
+
+  --text-lede: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  --text-lede--line-height: 1.6;
+  --text-lede--letter-spacing: 0em;
+  --text-lede--font-weight: 400;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.68;
+  --text-body--letter-spacing: 0.004em;
+  --text-body--font-weight: 400;
+
+  --text-prose: 1.0625rem;
+  --text-prose--line-height: 1.72;
+  --text-prose--letter-spacing: 0.004em;
+  --text-prose--font-weight: 400;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+  --text-small--letter-spacing: 0.004em;
+  --text-small--font-weight: 400;
+
+  --text-figure: clamp(2.25rem, 1.5rem + 2.8vw, 3.75rem);
+  --text-figure--line-height: 0.9;
+  --text-figure--letter-spacing: -0.03em;
+  --text-figure--font-weight: 500;
+
+  --text-figure-sm: 0.8125rem;
+  --text-figure-sm--line-height: 1.2;
+  --text-figure-sm--letter-spacing: 0.02em;
+  --text-figure-sm--font-weight: 500;
+
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.12em;
+  --text-label--font-weight: 500;
+
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.1;
+  --text-micro--letter-spacing: 0.16em;
+  --text-micro--font-weight: 500;
+
+  --text-pill: 0.75rem;
+  --text-pill--line-height: 1;
+  --text-pill--letter-spacing: 0.04em;
+  --text-pill--font-weight: 400;
+
+  --text-code: 0.875rem;
+  --text-code--line-height: 1.65;
+  --text-code--letter-spacing: 0em;
+  --text-code--font-weight: 400;
+
+  --text-mailto: clamp(1.25rem, 0.9rem + 2.2vw, 2.5rem);
+  --text-mailto--line-height: 1.1;
+  --text-mailto--letter-spacing: -0.01em;
+  --text-mailto--font-weight: 500;
+
+  /* Radius. Radius is a privilege, not a default. */
+  --radius-panel: 14px;
+  --radius-chip: 6px;
+  --radius-pill: 999px;
+
+  /* Breakpoints. Four, redefined in px equivalents. 2xl is removed so nobody
+     reaches for a fifth. sm 640, md 900, lg 1120, xl 1400. */
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 56.25rem;
+  --breakpoint-lg: 70rem;
+  --breakpoint-xl: 87.5rem;
+  --breakpoint-2xl: initial;
+
+  /* Container. */
+  --container-shell: 82.5rem;
+}
+
+/*
+  The bone band. One section on the site inverts. Because Tailwind 4 utilities
+  resolve to var(--color-*), redefining the tokens on this selector flips every
+  utility, every component and every focus ring inside it with no per-component
+  decision. The accent has a dark companion here because #ee4a94 on bone is
+  2.90:1 and fails even large-text contrast. Never use --color-accent's dark
+  value outside this scope and never use the dark palette's accent inside it.
+*/
+.band-bone {
+  --color-ground: #eaebe6;
+  --color-surface: #f3f4ef;
+  --color-raised: #f3f4ef;
+  --color-plate-ground: #eaebe6;
+  --color-edge: #cfd2ca;
+  --color-edge-control: #7c8076;
+  --color-text: #0a0c10;
+  --color-muted: #4f5766;
+  --color-accent: #961b50;
+  --color-steel: #2f4a7a;
+  --color-accent-bar: #961b50;
+  --color-steel-bar: #2f4a7a;
+  --color-ink-b: #7c8076;
+  --color-hairline: rgba(10, 12, 16, 0.12);
+  --color-hairline-strong: rgba(10, 12, 16, 0.2);
+  --meter-track: #d6d8d1;
+  background-color: var(--color-ground);
+  color: var(--color-text);
+}
+
+:root {
+  color-scheme: dark;
+  --meter-track: #232a36;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Nothing on this site uses a negative margin to break out of a container, so
+     nothing can cause horizontal overflow. overflow-x: clip is a belt on top of
+     that, and it is clip rather than hidden so position: sticky still works. */
+  body {
+    overflow-x: clip;
+    background-color: var(--color-ground);
+    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    letter-spacing: var(--text-body--letter-spacing);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* One grain layer for the whole site, page level, behind everything. Plates
+     do not carry their own grain: two grains is noise and a mobile paint cost. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.022;
+    background-repeat: repeat;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  /*
+    FAMILY BY SCALE. This is a rule, not a convention, and it is what stops the
+    page sliding back into an undifferentiated typeset column.
+      - var(--font-display) is never used below 0.875rem. Anything smaller than
+        that is mono, without exception.
+      - var(--font-mono) is never used above 1.25rem, with exactly three declared
+        exceptions: .figure (text-figure), .figure-band (text-figure), and
+        .mailto-xl (text-mailto). No fourth exception is ever added.
+    Family and scale therefore change together at every step of the hierarchy.
+  */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    text-wrap: pretty;
+  }
+
+  h1 {
+    font-size: var(--text-h1);
+    font-weight: var(--text-h1--font-weight);
+    line-height: var(--text-h1--line-height);
+    letter-spacing: var(--text-h1--letter-spacing);
+  }
+  h2 {
+    font-size: var(--text-h2);
+    font-weight: var(--text-h2--font-weight);
+    line-height: var(--text-h2--line-height);
+    letter-spacing: var(--text-h2--letter-spacing);
+  }
+  h3 {
+    font-size: var(--text-h3);
+    font-weight: var(--text-h3--font-weight);
+    line-height: var(--text-h3--line-height);
+    letter-spacing: var(--text-h3--letter-spacing);
+  }
+  h4 {
+    font-size: var(--text-h4);
+    font-weight: var(--text-h4--font-weight);
+    line-height: var(--text-h4--line-height);
+    letter-spacing: var(--text-h4--letter-spacing);
+  }
+
+  /* Every figure, key, date and tick is tabular. Forced here rather than trusted
+     to per-component utilities. */
+  .figure,
+  .figure-band,
+  .figure-sm,
+  .label,
+  .micro,
+  .kv-value,
+  .kv-key,
+  .date,
+  .tick,
+  .mailto-xl {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--color-hairline-strong);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    transition: text-decoration-color 140ms ease-out;
+  }
+
+  a:hover,
+  a:focus-visible {
+    text-decoration-color: var(--color-steel);
+    text-decoration-thickness: 2px;
+  }
+
+  /* The focus ring is steel, never accent. A ring rendered in the same colour
+     as "a span he authored" would destroy the semantics the palette is built on.
+     outline-offset places the ring on the ground, where steel is 8.32:1. */
+  :focus-visible {
+    outline: 2px solid var(--color-steel);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-steel);
+    color: var(--color-ground);
+  }
+
+  svg {
+    display: block;
+  }
+
+  /*
+    The hidden attribute has to win. The UA sheet declares [hidden] as
+    display: none at UA origin, which any author display loses to it in theory but
+    beats in practice the moment an author rule sets display on the same element:
+    the tag filter hides a grid item whose page level rule is display: flex, and
+    flex won, leaving a hidden card in an empty stretched cell. Tailwind's
+    preflight ships this rule but only when preflight is emitted, and this sheet
+    imports Tailwind with source(none), so it is declared here rather than
+    assumed. The :where() keeps specificity at zero and exempts
+    hidden="until-found", which exists precisely to stay findable.
+  */
+  [hidden]:where(:not([hidden='until-found'])) {
+    display: none !important;
+  }
+}
+
+@layer components {
+  /* THE CONTAINER. Every section is full width. Content is centred by wrapping
+     it in .shell. Full bleed means "do not wrap this child in .shell". There is
+     no negative margin technique anywhere on this site. */
+  .shell {
+    width: 100%;
+    max-width: var(--container-shell);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  .grid12 {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+  }
+  @media (min-width: 56.25rem) {
+    .grid12 {
+      column-gap: 2.5rem;
+    }
+  }
+
+  .rule-top {
+    border-top: 1px solid var(--color-edge);
+  }
+  .rule-bottom {
+    border-bottom: 1px solid var(--color-edge);
+  }
+  .hairline-bottom {
+    border-bottom: 1px solid var(--color-hairline);
+  }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    font-weight: var(--text-label--font-weight);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .micro {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: var(--text-micro--font-weight);
+    line-height: var(--text-micro--line-height);
+    letter-spacing: var(--text-micro--letter-spacing);
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .figure {
+    font-family: var(--font-mono);
+    font-size: var(--text-figure);
+    font-weight: var(--text-figure--font-weight);
+    line-height: var(--text-figure--line-height);
+    letter-spacing: var(--text-figure--letter-spacing);
+    color: var(--color-accent);
+  }
+
+  /* Same step as .figure. Named separately only because the family-by-scale rule
+     above declares it as one of the three permitted large-mono exceptions. */
+  .figure-band {
+    font-family: var(--font-mono);
+    font-size: var(--text-figure);
+    font-weight: var(--text-figure--font-weight);
+    line-height: var(--text-figure--line-height);
+    letter-spacing: var(--text-figure--letter-spacing);
+    color: var(--color-accent);
+  }
+
+  .figure-sm {
+    font-family: var(--font-mono);
+    font-size: var(--text-figure-sm);
+    font-weight: var(--text-figure-sm--font-weight);
+    letter-spacing: var(--text-figure-sm--letter-spacing);
+  }
+
+  .tick {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--text-micro--letter-spacing);
+    color: var(--color-muted);
+  }
+
+  .lede {
+    font-size: var(--text-lede);
+    line-height: var(--text-lede--line-height);
+    max-width: 46ch;
+    color: var(--color-muted);
+  }
+
+  /* Emphasis inside running copy is weight and colour on the text token, never
+     the accent. */
+  .lede strong,
+  .body-copy strong {
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .body-copy {
+    max-width: 66ch;
+    color: var(--color-muted);
+  }
+
+  .measure-prose {
+    max-width: 68ch;
+  }
+
+  /* The plate box. width and aspect-ratio own the geometry, the SVG never does.
+     There is no min-height anywhere: a min-height plus an aspect-ratio plus an
+     inline ratio on the element is three sources of truth for one box, which is
+     what let the box and the drawing disagree in v1. object-fit is inert on an
+     <svg> and load bearing on an <img>, so the later photograph swap is one
+     element with no CSS edit. */
+  .plate {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/*
+  ============================================================================
+  SHARED COMPONENT LAYER.
+  Every class below is written by Engineer SHELL and consumed by the page
+  authors. Classes marked CONSUMER are typed by hand in pages, so they live
+  here rather than in a scoped component style block.
+  ============================================================================
+*/
+@layer components {
+  /* ---------- Layout chrome ---------- */
+
+  /* CONSUMER: none. Owned by Layout.astro. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 60;
+  }
+  /* :focus as well as :focus-visible: a skip link is reached by keyboard only,
+     and older engines that lack :focus-visible must still reveal it. */
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    left: 1rem;
+    top: 1rem;
+    padding: 12px 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-edge-control);
+    color: var(--color-text);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+  }
+
+  /* position: relative so the progress rail has a containing block even on a
+     short viewport, where sticky is switched off. */
+  .site-header {
+    position: relative;
+    top: 0;
+    z-index: 50;
+    background-color: color-mix(in oklab, var(--color-ground) 88%, transparent);
+    backdrop-filter: none;
+    border-bottom: 1px solid var(--color-edge);
+    transition: border-color 140ms ease-out;
+  }
+  @media (min-height: 35rem) {
+    .site-header {
+      position: sticky;
+    }
+  }
+  .site-header.at-top {
+    border-bottom-color: transparent;
+  }
+  .site-header-inner {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .site-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-width: 0;
+    text-decoration: none;
+  }
+  .site-header-name {
+    font-size: var(--text-h4);
+    font-weight: var(--text-h4--font-weight);
+    letter-spacing: var(--text-h4--letter-spacing);
+    white-space: nowrap;
+  }
+  .site-header-sub {
+    display: none;
+  }
+  @media (min-width: 56.25rem) {
+    .site-header-sub {
+      display: inline-block;
+      padding-left: 0.75rem;
+      margin-left: 0.125rem;
+      border-left: 1px solid var(--color-edge);
+    }
+  }
+  /*
+    Two navs share the bar. .site-nav is the seven in page section anchors and
+    .site-routes is the three routes. The section anchors are the ones that give
+    way as the bar narrows, because scrolling already reaches every section and
+    nothing but the header reaches another page.
+  */
+  .site-nav {
+    display: none;
+    margin-left: auto;
+  }
+  @media (min-width: 40rem) {
+    .site-nav {
+      display: block;
+    }
+  }
+  .site-nav ul {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 56.25rem) {
+    .site-nav ul {
+      gap: 1.125rem;
+    }
+  }
+  .nav-link {
+    position: relative;
+    display: inline-block;
+    padding-block: 0.5rem;
+    text-decoration: none;
+    color: var(--color-muted);
+    transition: color 180ms ease-out;
+  }
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    color: var(--color-text);
+  }
+  /* aria-current carries two legitimate values here: "page" on a route link the
+     header emits when the href resolves to the current pathname, and "location"
+     which the scroll spy moves between the in page section anchors. Matching on
+     presence rather than on one literal keeps both lit. */
+  .nav-link[aria-current]:not([aria-current='false']) {
+    color: var(--color-text);
+  }
+  .nav-ind {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-steel);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 180ms ease-out;
+  }
+  .nav-link[aria-current]:not([aria-current='false']) .nav-ind {
+    transform: scaleX(1);
+  }
+  /* A colour only hint that the reader is inside this route's family, set from
+     Layout's activeNav. Deliberately not aria-current and deliberately without
+     the indicator bar: a case study is not the /projects page, so it may not
+     announce itself as one, and the bar is reserved for what actually is. */
+  .nav-link[data-area] {
+    color: var(--color-text);
+  }
+  /* The four wide section anchors join the bar at 1400px. Below that the bar
+     carries Work, Writing, Contact and the three routes, which is what fits a
+     900px header once the route nav shares it. */
+  .nav-item-wide {
+    display: none;
+  }
+  @media (min-width: 87.5rem) {
+    .nav-item-wide {
+      display: block;
+    }
+  }
+
+  /*
+    The route nav. Three links, present at every width down to 320px, so a reader
+    on /blog can reach /projects and /resume from the header rather than only from
+    the footer. The section anchors are what go on a phone, not these: an in page
+    anchor duplicates scrolling, and a route is the only thing the header can
+    offer that scrolling cannot.
+  */
+  .site-routes {
+    margin-left: auto;
+  }
+  .site-routes ul {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  /* The vertical hairline and the reset of the auto margin belong to the width
+     where .site-nav is actually rendered. Below 40rem the section nav is
+     display: none but is still an adjacent sibling, so scoping this to the
+     breakpoint is what keeps the routes flush right on a phone. */
+  @media (min-width: 40rem) {
+    .site-nav + .site-routes {
+      margin-left: 0;
+      padding-left: 0.75rem;
+      border-left: 1px solid var(--color-edge);
+    }
+  }
+  @media (min-width: 56.25rem) {
+    .site-nav + .site-routes {
+      padding-left: 1.125rem;
+    }
+    .site-routes ul {
+      gap: 1.125rem;
+    }
+  }
+  /* Two label lengths for two of the three links. display: none takes the unused
+     one out of the accessibility tree as well as out of the layout, so each link
+     has exactly one accessible name at every width. */
+  .route-full {
+    display: none;
+  }
+  @media (min-width: 87.5rem) {
+    .route-short {
+      display: none;
+    }
+    .route-full {
+      display: inline;
+    }
+  }
+
+  .progress-rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--color-steel);
+    opacity: 0.55;
+    transform: scaleX(0);
+    transform-origin: left;
+    pointer-events: none;
+  }
+  /*
+    Longhands only, and animation-timeline deliberately on a DIFFERENT selector.
+    Lightning CSS merges adjacent declarations on one selector into the animation
+    shorthand, and the shorthand has no slot for a single-animation-timeline
+    value, so `animation: linear both progress-grow scroll(root)` came out the
+    other side and Chromium discarded the whole declaration. Two selectors cannot
+    be folded into one shorthand, and even if the first rule is shorthanded its
+    reset of animation-timeline to auto is then overridden by the second rule,
+    which is both later and more specific. Do not merge these two rules.
+
+    The duration is an explicit 1s, not auto. A progress-based timeline supplies
+    its own range, so Chromium ignores the value: measured mid scroll on the
+    homepage at 1280px, auto, 1s and 1ms all produced the same 700.55px of a
+    1280px rail. An explicit non-zero time is kept because auto is the value an
+    engine without progress-based timelines resolves to zero, and a zero duration
+    animation never paints. 1s is a number that cannot be read as "no animation".
+  */
+  @supports (animation-timeline: scroll(root block)) {
+    .progress-rail {
+      animation-name: progress-grow;
+      animation-duration: 1s;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+    }
+    .site-header .progress-rail {
+      animation-timeline: scroll(root block);
+    }
+    @keyframes progress-grow {
+      from {
+        transform: scaleX(0);
+      }
+      to {
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--color-edge);
+    padding-block: 3rem;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  @media (min-width: 40rem) {
+    .footer-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  /* The fourth track is sized by its content, the other three share what is
+     left. The contact column holds the two longest strings in the footer, the
+     mailto address at 235px and the profile URL at 287px at the mono figure
+     step, and an even four track split gives 286px at a 1440 viewport. One pixel
+     short put a single character of the URL on a second line, which reads as a
+     rendering fault rather than as typography. max-content asks for exactly the
+     287px the widest figure needs, so from 900px up neither value wraps at any
+     width, measured at 900, 1000, 1024, 1120, 1200, 1280, 1440 and 1600. It
+     costs the three sharing columns nothing at 1440, where they still measure
+     286px, and it takes them to 148px at 900px, which still sets every nav label
+     in the footer on one line. A fixed fraction was tried first: 1.15fr fixed
+     the URL but took column one to 276px, one pixel under what the role and
+     location line needs, so it traded the orphan for a wrapped caption.
+     Below 900px the grid is two tracks or one, the column is 280px at a 320px
+     viewport, and the URL has to break: SiteFooter.astro puts that break at a
+     boundary rather than leaving it to fall wherever the line fills. */
+  @media (min-width: 56.25rem) {
+    .footer-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) max-content;
+    }
+  }
+  .footer-list {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  /* overflow-wrap: anywhere is load bearing, not decoration. At 900px to 1024px
+     the footer grid is four narrow tracks and the mailto address is a single
+     unbreakable monospace string, 235px wide at the figure step, which pushed
+     documentElement.scrollWidth to 934 against a clientWidth of 900 on every
+     route. body { overflow-x: clip } cannot contain that because html is the
+     scroll container, so the wrap is the fix and not a belt. It stays even now
+     that the two long values carry their own wrap opportunities, because it is
+     the only declaration here that still holds if a value changes shape and has
+     no boundary to break at. */
+  .footer-list a {
+    font-size: var(--text-small);
+    color: var(--color-muted);
+    overflow-wrap: anywhere;
+  }
+  .footer-list a:hover,
+  .footer-list a:focus-visible {
+    color: var(--color-text);
+  }
+  /* The footer contact column is a readout, same key over value shape as the
+     hero identity panel, stacked because a four track footer column is about
+     180px wide and a side by side key would leave the value no room. */
+  .footer-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .footer-pair a {
+    font-family: var(--font-mono);
+    font-size: var(--text-figure-sm);
+    line-height: var(--text-figure-sm--line-height);
+    letter-spacing: var(--text-figure-sm--letter-spacing);
+    color: var(--color-text);
+    /* No text-wrap tuning here, and that is a measured decision rather than an
+       omission. Both pretty and balance were tried and both left the line widths
+       byte identical at 1000, 1024, 1200 and 1440, because neither reflows a
+       break that has no word boundary to choose from. What did work was the
+       content sized fourth track above, which removes the break entirely from
+       900px up, and a wrap opportunity in the markup for the widths below that,
+       where the column is genuinely narrower than the string. */
+  }
+  .footer-build {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-hairline);
+  }
+
+  /* ---------- Panel ---------- */
+
+  .panel {
+    position: relative;
+  }
+  .panel-surface {
+    background: var(--color-surface);
+    border: 1px solid var(--color-edge);
+    box-shadow: inset 0 1px 0 rgba(232, 237, 245, 0.04);
+  }
+  .panel-raised {
+    background: var(--color-raised);
+    border: 1px solid var(--color-edge);
+    box-shadow: inset 0 1px 0 rgba(232, 237, 245, 0.04);
+  }
+  .panel-flat {
+    background: transparent;
+    border: 0;
+  }
+  .panel-corner-panel {
+    border-radius: var(--radius-panel);
+  }
+  .panel-corner-square {
+    border-radius: 0;
+  }
+  .panel-pad-none {
+    padding: 0;
+  }
+  .panel-pad-sm {
+    padding: 1rem;
+  }
+  .panel-pad-md {
+    padding: 1.25rem;
+  }
+  .panel-pad-lg {
+    padding: 1.75rem;
+  }
+
+  a .panel,
+  .panel[data-interactive] {
+    transition:
+      border-color 140ms ease-out,
+      transform 140ms ease-out;
+  }
+  a:hover .panel,
+  a:focus-visible .panel,
+  .panel[data-interactive]:hover,
+  .panel[data-interactive]:focus-within {
+    border-color: var(--color-edge-control);
+    transform: translateY(-2px);
+  }
+
+  /* ---------- Pill ---------- */
+
+  /* CONSUMER: pages and components write <ul class="pill-row"> by hand. */
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--text-pill);
+    font-weight: var(--text-pill--font-weight);
+    line-height: var(--text-pill--line-height);
+    letter-spacing: var(--text-pill--letter-spacing);
+    text-transform: none;
+    padding: 6px 10px;
+    border: 1px solid var(--color-edge);
+    border-radius: var(--radius-pill);
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  .pill-steel {
+    color: var(--color-steel);
+    border-color: color-mix(in oklab, var(--color-steel) 40%, transparent);
+  }
+
+  /* ---------- KeyValue ---------- */
+
+  .kv {
+    margin: 0;
+  }
+  .kv-row {
+    display: grid;
+    grid-template-columns: var(--kv-key-w, 6.5rem) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.75rem;
+    padding-block: 10px;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .kv-dense .kv-row {
+    padding-block: 6px;
+  }
+  .kv-row:last-child {
+    border-bottom: 0;
+  }
+  .kv-key {
+    margin: 0;
+  }
+  .kv-value {
+    margin: 0;
+    min-width: 0;
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    font-weight: 500;
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+  }
+  .kv-value-copy {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: var(--text-figure-sm);
+    line-height: var(--text-figure-sm--line-height);
+    letter-spacing: var(--text-figure-sm--letter-spacing);
+  }
+
+  /* RequestPath footer: the same dl laid out as one horizontal strip. */
+  .kv-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+  .kv-inline .kv-row {
+    border-bottom: 0;
+    grid-template-columns: auto auto;
+    gap: 0.5rem;
+  }
+
+  /* ---------- CopyButton ---------- */
+
+  /* 24 by 24 is the WCAG 2.2 SC 2.5.8 floor and the button sits about 12px from
+     the mailto link beside it, so the spacing exception does not apply and the
+     box has to be the size. The glyph inside stays 14 by 14. */
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--color-edge-control);
+    border-radius: var(--radius-chip);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+      border-color 140ms ease-out,
+      color 140ms ease-out;
+  }
+  .copy-btn:hover,
+  .copy-btn:focus-visible {
+    border-color: var(--color-text);
+    color: var(--color-text);
+  }
+  .copy-glyph {
+    position: relative;
+    display: block;
+    width: 14px;
+    height: 14px;
+  }
+  .copy-glyph i {
+    position: absolute;
+    display: block;
+    width: 9px;
+    height: 9px;
+    border: 1px solid currentColor;
+    border-radius: 1px;
+  }
+  .copy-glyph i:first-child {
+    left: 0;
+    top: 0;
+  }
+  .copy-glyph i:last-child {
+    right: 0;
+    bottom: 0;
+    background: var(--color-ground);
+  }
+  .copy-state {
+    min-width: 4.5rem;
+  }
+
+  /* ---------- Button ---------- */
+
+  .btn {
+    height: 48px;
+    padding-inline: 22px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 140ms ease-out,
+      border-color 140ms ease-out,
+      transform 140ms ease-out;
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-ground);
+    border: 0;
+  }
+  .btn-primary:hover,
+  .btn-primary:focus-visible {
+    background: color-mix(in oklab, var(--color-accent) 88%, white);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--color-edge-control);
+    color: var(--color-text);
+  }
+  .btn-secondary:hover,
+  .btn-secondary:focus-visible {
+    border-color: var(--color-text);
+  }
+  .btn-hint {
+    opacity: 0.7;
+  }
+  .btn-primary .btn-hint {
+    color: var(--color-ground);
+  }
+
+  /* ---------- SectionHead ---------- */
+
+  .section-head .section-index {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+  }
+  .section-head .section-index > span:first-child::after {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    margin-left: 0.75rem;
+    vertical-align: middle;
+    background: var(--color-edge);
+  }
+  .section-head-left h2 {
+    max-width: 18ch;
+    margin: 0 0 2rem;
+  }
+  .section-head-wide h2 {
+    max-width: 24ch;
+    margin: 0 0 2.5rem;
+  }
+
+  /* ---------- StatCell and the outcome cluster ---------- */
+
+  /* CONSUMER: the #outcomes row wrapper. Cells are divided by vertical
+     hairlines and never by gaps, so the row reads as one instrument cluster. */
+  .stat-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .stat-row > * {
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--color-edge);
+  }
+  .stat-row > *:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  /* Every breakpoint below resets with :nth-child(n) so all rules carry the
+     same specificity (0,2,0) and later blocks win on source order alone.
+     A plain `.stat-row > *` reset would lose to the two up rules and leak
+     stray hairlines into the four up layout. */
+  @media (min-width: 40rem) {
+    .stat-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .stat-row > *:nth-child(n) {
+      padding-block: 1.5rem;
+      padding-inline: 1.5rem;
+      border-top: 0;
+      border-left: 0;
+    }
+    .stat-row > *:nth-child(-n + 2) {
+      padding-top: 0;
+    }
+    .stat-row > *:nth-child(2n + 1) {
+      padding-left: 0;
+    }
+    .stat-row > *:nth-child(2n) {
+      border-left: 1px solid var(--color-edge);
+    }
+    .stat-row > *:nth-child(n + 3) {
+      border-top: 1px solid var(--color-edge);
+    }
+  }
+  @media (min-width: 70rem) {
+    .stat-row {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .stat-row > *:nth-child(n) {
+      padding-block: 0;
+      padding-inline: 1.5rem;
+      border-top: 0;
+      border-left: 1px solid var(--color-edge);
+    }
+    .stat-row > *:nth-child(1) {
+      border-left: 0;
+      padding-left: 0;
+    }
+  }
+
+  .stat-cell .label {
+    margin: 0 0 0.875rem;
+  }
+  .stat-cell .figure {
+    margin: 0 0 0.875rem;
+    /* Reserve two lines (line-height 0.9) so a figure that wraps does not push
+       its own meter and context below the other cells in the cluster. */
+    min-height: 1.8em;
+  }
+  .meter {
+    height: 3px;
+    background: var(--meter-track);
+  }
+  .meter > span {
+    display: block;
+    height: 100%;
+    background: var(--color-accent);
+    transform: scaleX(var(--fill));
+    transform-origin: left;
+  }
+  .stat-context {
+    margin: 0.875rem 0 0;
+    color: var(--color-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ---------- LedgerRow ---------- */
+
+  /* CONSUMER: the two column wrapper for the ledger. */
+  .ledger-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 2.5rem;
+  }
+  @media (min-width: 70rem) {
+    .ledger-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .ledger-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: 1rem;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--color-edge);
+    border-radius: 0;
+  }
+  .ledger-row .label {
+    margin: 0;
+  }
+  .ledger-figure {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-h3);
+    line-height: var(--text-h3--line-height);
+    font-weight: 500;
+    color: var(--color-accent);
+    text-align: right;
+  }
+  .ledger-context {
+    grid-column: 1 / -1;
+    margin: 0.375rem 0 0;
+    color: var(--color-muted);
+  }
+
+  /* ---------- RoleEntry and the rail ---------- */
+
+  /* CONSUMER: pages write <ol class="role-rail">. */
+  .role-rail {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .role-rail::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 20px;
+    width: 1px;
+    background: var(--color-edge);
+  }
+  @media (min-width: 56.25rem) {
+    .role-rail::before {
+      left: 104px;
+    }
+  }
+  @media (min-width: 70rem) {
+    .role-rail::before {
+      left: 132px;
+    }
+  }
+
+  .role {
+    display: grid;
+    grid-template-columns: 20px 1px minmax(0, 1fr);
+    padding-block: 1.5rem;
+  }
+  .role > .date {
+    grid-column: 3;
+    grid-row: 1;
+    margin: 0 0 0.625rem;
+    padding-left: 1.25rem;
+    color: var(--color-muted);
+  }
+  .role > .role-marker {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    margin-top: 0.125rem;
+    justify-self: center;
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-steel);
+    background: transparent;
+    transform: translateX(-0.5px) translateX(calc(var(--lane, 0) * 1.25rem));
+  }
+  .role[data-current='true'] > .role-marker {
+    border: 0;
+    border-radius: 0;
+    background: var(--color-accent);
+    transform: translateX(-0.5px) translateX(calc(var(--lane, 0) * 1.25rem)) rotate(45deg);
+  }
+  .role > details,
+  .role > .role-static {
+    grid-column: 3;
+    grid-row: 2;
+    padding-left: 1.25rem;
+    margin-left: calc(var(--lane, 0) * 1.25rem);
+  }
+  .role[data-current='true'] > details,
+  .role[data-current='true'] > .role-static {
+    border-left: 2px solid var(--color-accent);
+  }
+  /* Lanes above zero draw their own 1px rule so a future overlapping role has a
+     visible spine of its own without a rewrite. */
+  .role:not([style*='--lane: 0']) > details {
+    border-left: 1px solid var(--color-edge);
+  }
+
+  @media (min-width: 56.25rem) {
+    .role {
+      grid-template-columns: 104px 1px minmax(0, 1fr);
+    }
+    .role > .date {
+      grid-column: 1;
+      grid-row: 1;
+      margin: 0;
+      padding-left: 0;
+      padding-right: 1.25rem;
+      text-align: right;
+    }
+    .role > details,
+    .role > .role-static {
+      grid-column: 3;
+      grid-row: 1;
+    }
+  }
+  @media (min-width: 70rem) {
+    .role {
+      grid-template-columns: 132px 1px minmax(0, 1fr);
+    }
+  }
+
+  .role summary {
+    list-style: none;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: 1rem;
+  }
+  .role summary::-webkit-details-marker {
+    display: none;
+  }
+  .role summary h3,
+  .role-static h3 {
+    margin: 0;
+    grid-column: 1;
+  }
+  .role-static .micro {
+    margin: 0.375rem 0 0;
+  }
+  .role-title {
+    grid-column: 1;
+    margin: 0.25rem 0 0;
+    color: var(--color-muted);
+    font-size: var(--text-small);
+  }
+  .role summary .micro {
+    grid-column: 1;
+    margin: 0.375rem 0 0;
+  }
+  .role-toggle {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    position: relative;
+    display: block;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--color-edge-control);
+    border-radius: var(--radius-chip);
+    flex: none;
+  }
+  .role-toggle i {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: block;
+    width: 10px;
+    height: 1px;
+    margin-left: -5px;
+    background: currentColor;
+    transition: transform 140ms ease-out;
+  }
+  .role-toggle i:last-child {
+    transform: rotate(90deg);
+  }
+  .role details[open] .role-toggle i:last-child {
+    transform: rotate(0deg);
+  }
+  .role-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 240ms ease-out;
+  }
+  .role details[open] .role-body {
+    grid-template-rows: 1fr;
+  }
+  .role-body-inner {
+    overflow: hidden;
+    min-height: 0;
+    padding-top: 1rem;
+  }
+  .role-body .body-copy {
+    margin: 0;
+  }
+  .highlights {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+  }
+  .highlights li {
+    display: flex;
+    gap: 0.25rem;
+    max-width: 62ch;
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    color: var(--color-muted);
+    margin-block: 0.5rem;
+  }
+  .hl-index {
+    color: var(--color-steel);
+    width: 2rem;
+    display: inline-block;
+    flex: none;
+  }
+
+  /* ---------- Plate: TRACE FIELD ---------- */
+
+  .plate-figure {
+    container-type: inline-size;
+    margin: 0;
+    background: var(--color-plate-ground);
+  }
+
+  /* Box aspect per variant per breakpoint. The selector list matches the plate
+     SVG inside its figure and a bare <img> carrying the same variant class, so a
+     photograph inherits all three ratios with no new rule. */
+  .plate-portrait .plate,
+  img.plate-portrait {
+    aspect-ratio: 4 / 3;
+  }
+  @media (min-width: 40rem) {
+    .plate-portrait .plate,
+    img.plate-portrait {
+      aspect-ratio: 16 / 7;
+    }
+  }
+  @media (min-width: 70rem) {
+    .plate-portrait .plate,
+    img.plate-portrait {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
+  .plate-banner .plate,
+  img.plate-banner {
+    aspect-ratio: 4 / 3;
+  }
+  @media (min-width: 40rem) {
+    .plate-banner .plate,
+    img.plate-banner {
+      aspect-ratio: 16 / 9;
+    }
+  }
+  @media (min-width: 56.25rem) {
+    .plate-banner .plate,
+    img.plate-banner {
+      aspect-ratio: 16 / 7;
+    }
+  }
+
+  .plate-card .plate,
+  img.plate-card {
+    aspect-ratio: 3 / 2;
+  }
+  @media (min-width: 40rem) {
+    .plate-card .plate,
+    img.plate-card {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  .plate-monogram {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    border: 1px solid var(--color-edge);
+    border-radius: var(--radius-chip);
+    overflow: hidden;
+  }
+  .plate-monogram .plate {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+
+  /* Chrome. Real HTML text at the site's own micro step, so it cannot shrink
+     into illegibility and cannot be cropped by the SVG's slice framing. */
+  .pl-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    height: 28px;
+    padding-inline: 12px;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .pl-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 1.25rem;
+    min-height: 32px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--color-hairline);
+  }
+  .pl-pair {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .pl-v {
+    color: var(--color-text);
+  }
+  /* Three pairs need about 415px. Below that the third pair goes rather than
+     wrapping the readout onto a second line. */
+  @container (max-width: 479px) {
+    .pl-pair-3 {
+      display: none;
+    }
+  }
+  .plate-caption {
+    margin-top: 8px;
+  }
+
+  /* Marks. Every stroke width below is a device pixel value, because
+     vector-effect keeps hairlines at 1px from the 0.24 scale of the 26px
+     monogram to the 1.31 scale of the case banner. */
+  .pl-grid-minor,
+  .pl-grid-major,
+  .pl-lanes,
+  .pl-comb,
+  .pl-caps,
+  .pl-tail,
+  .pl-trace,
+  .pl-node,
+  .pl-ring,
+  .pl-cross,
+  .pl-bar,
+  .pl-mono-grid {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pl-grid-minor {
+    fill: none;
+    stroke: var(--color-hairline);
+    stroke-width: 1;
+  }
+  .pl-grid-major,
+  .pl-mono-grid {
+    fill: none;
+    stroke: var(--color-hairline-strong);
+    stroke-width: 1;
+  }
+  .pl-monogram-text {
+    fill: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .pl-monogram-accent {
+    fill: var(--color-accent);
+  }
+  .pl-lanes {
+    fill: none;
+    stroke: var(--color-hairline);
+    stroke-width: 1;
+    stroke-dasharray: 3 6;
+  }
+  .pl-comb {
+    fill: none;
+    stroke: var(--color-steel);
+    stroke-width: 1;
+    opacity: 0.42;
+  }
+  /* Exactly .rp-bar in SVG: solid bar fill, 1px steel outline. */
+  .pl-bar {
+    fill: var(--color-steel-bar);
+    stroke: var(--color-steel);
+    stroke-width: 1;
+  }
+  .pl-caps {
+    fill: none;
+    stroke: var(--color-steel);
+    stroke-width: 2;
+  }
+  /* Exactly .span-tail in SVG. */
+  .pl-tail {
+    fill: none;
+    stroke: var(--color-steel);
+    stroke-width: 1.5;
+    stroke-dasharray: 7 6;
+    opacity: 0.5;
+  }
+  .pl-envelope {
+    fill: var(--color-ink-b);
+    fill-opacity: 0.18;
+    stroke: none;
+  }
+  /* Stroke colour lives on the two groups, never on .pl-trace, so the group can
+     set it. The two ink depths are what stop the field reading flat: they are
+     decorative marks inside an aria-hidden figure whose meaning is carried by
+     the figcaption in plain language, so their contrast is a composition
+     decision and not a WCAG 1.4.11 obligation. Do not raise them. */
+  .pl-traces {
+    stroke: var(--color-steel);
+  }
+  .pl-traces-deep {
+    stroke: var(--color-ink-b);
+    opacity: 0.75;
+  }
+  .pl-trace {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .pl-node {
+    fill: var(--color-plate-ground);
+    stroke: var(--color-steel);
+    stroke-width: 1.25;
+  }
+  .pl-bar-mark {
+    fill: var(--color-accent-bar);
+    stroke: var(--color-accent);
+  }
+  .pl-cap-mark {
+    stroke: var(--color-accent);
+  }
+  .pl-ring {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 2;
+    transition: transform 200ms ease-out;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .pl-cross {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1;
+    opacity: 0.85;
+  }
+  a:hover .pl-ring,
+  a:focus-visible .pl-ring,
+  .panel[data-interactive]:hover .pl-ring,
+  .panel[data-interactive]:focus-within .pl-ring {
+    transform: scale(1.15);
+  }
+
+  /* ---------- RequestPath ---------- */
+
+  .rp-titlebar {
+    height: 44px;
+    border-bottom: 1px solid var(--color-hairline);
+    padding-inline: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .rp-titlebar h3,
+  .rp-titlebar p {
+    margin: 0;
+  }
+  .rp-axis {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 12px 20px 0;
+  }
+  .rp-axis p {
+    margin: 0;
+  }
+  .rp-body {
+    position: relative;
+    padding: 8px 20px 16px;
+  }
+  .rp-grid {
+    display: none;
+  }
+  .rp-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    row-gap: 4px;
+    padding-block: 6px;
+  }
+  .rp-row .label {
+    margin: 0;
+  }
+  .rp-authored .label {
+    color: var(--color-accent);
+  }
+  .rp-track {
+    position: relative;
+    height: 20px;
+  }
+  .rp-bar {
+    position: absolute;
+    top: 50%;
+    height: 10px;
+    margin-top: -5px;
+    border-radius: 3px;
+    background: var(--color-steel-bar);
+    box-shadow: inset 0 0 0 1px var(--color-steel);
+  }
+  .rp-bar[data-authored='true'] {
+    background: var(--color-accent-bar);
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+  .rp-bar[data-weight='wrapper'] {
+    height: 6px;
+    margin-top: -3px;
+  }
+  .span-tail {
+    position: absolute;
+    top: 50%;
+    border-top: 2px dashed var(--color-steel);
+    opacity: 0.5;
+  }
+  .rp-note {
+    margin: 0.25rem 0 0.75rem;
+  }
+  .rp-footer {
+    height: auto;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--color-hairline);
+    padding: 8px 20px;
+  }
+  .rp-footnote {
+    margin: 1rem 0 0;
+    color: var(--color-muted);
+    max-width: 66ch;
+  }
+  @media (min-width: 56.25rem) {
+    .rp-row {
+      grid-template-columns: 152px minmax(0, 1fr);
+      column-gap: 0;
+      row-gap: 0;
+    }
+    .rp-note {
+      padding-left: 152px;
+    }
+    .rp-grid {
+      display: block;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(20px + 152px);
+      right: 20px;
+      pointer-events: none;
+    }
+    .rp-grid i {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--color-hairline);
+    }
+    .rp-axis {
+      padding-left: calc(20px + 152px);
+    }
+  }
+
+  /* ---------- ProjectCard ---------- */
+
+  .project-card {
+    height: 100%;
+  }
+  .project-card .panel {
+    height: 100%;
+  }
+  .project-featured-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+  @media (min-width: 70rem) {
+    .project-featured-grid {
+      grid-template-columns: 7fr 5fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+  }
+  .project-body > * + * {
+    margin-top: 0.875rem;
+  }
+  .project-body h3 {
+    margin: 0;
+  }
+  .project-body h3 a {
+    text-decoration-color: var(--color-hairline-strong);
+  }
+  .project-summary {
+    color: var(--color-muted);
+  }
+  .project-card-band {
+    margin-bottom: 1.25rem;
+    border-radius: var(--radius-chip);
+    overflow: hidden;
+  }
+
+  /* CONSUMER: the 2 up grid for non featured cards. */
+  .card-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  @media (min-width: 56.25rem) {
+    .card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem;
+    }
+  }
+
+  /* ---------- NoteRow ---------- */
+
+  /* CONSUMER: the .micro DATE / TITLE / TAGS header row above the list. */
+  .note-head,
+  .note-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 1.5rem;
+  }
+  .note-head {
+    padding-block: 0.5rem;
+    border-bottom: 1px solid var(--color-edge);
+  }
+  .note-head p {
+    margin: 0;
+  }
+  .note-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .note-row {
+    position: relative;
+    min-height: 56px;
+    align-items: center;
+    row-gap: 0.5rem;
+    padding-block: 1.25rem;
+    padding-left: 0.75rem;
+    border-bottom: 1px solid var(--color-edge);
+    transition: background-color 180ms ease-out;
+  }
+  .note-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-steel);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 180ms ease-out;
+  }
+  .note-row:hover,
+  .note-row:focus-within {
+    background-color: var(--color-raised);
+  }
+  .note-row:hover::before,
+  .note-row:focus-within::before {
+    transform: scaleY(1);
+  }
+  .note-row h3 {
+    margin: 0;
+  }
+  .note-date {
+    margin: 0;
+    color: var(--color-muted);
+  }
+  .note-desc {
+    margin: 0.375rem 0 0;
+    color: var(--color-muted);
+    opacity: 0.55;
+    transition: opacity 180ms ease-out;
+  }
+  .note-row:hover .note-desc,
+  .note-row:focus-within .note-desc {
+    opacity: 1;
+  }
+  @media (min-width: 56.25rem) {
+    .note-head,
+    .note-row {
+      grid-template-columns: 112px minmax(0, 1fr) 160px;
+      align-items: start;
+    }
+  }
+
+  /* ---------- PullQuote ---------- */
+
+  /*
+    The band has to earn its full bleed. It previously lifted 2% off the ground
+    and carried a 30px quote across 38% of its width, which read as a rendering
+    seam rather than as a device. Three things fix that and all three are here:
+    the raised surface token AND a hairline on both edges, so the band is a
+    visible object at a glance; the quote at the h2 step, which is 52px at 1440
+    rather than 30px; and a measure that runs to about 64% of the band instead of
+    38%, set by the grid span rather than by a character count.
+  */
+  .quote-band {
+    --quote-gutter: clamp(1.25rem, 4vw, 2.5rem);
+    /* The shell measure without its own gutters, so the line below reproduces
+       .shell exactly while the band itself stays full bleed. */
+    --quote-content: calc(var(--container-shell) - 2 * var(--quote-gutter));
+
+    margin: 0;
+    background: var(--color-raised);
+    border-block: 1px solid var(--color-edge);
+    padding-block: clamp(3rem, 5vw, 4.5rem);
+    border-radius: 0;
+    /*
+      The shell inset is applied HERE rather than to an inner wrapper. A
+      <figcaption> only captions its figure when it is a direct child of it, and
+      with the wrapper in place Chromium reported the band as an unnamed figure
+      node: the attribution was on screen and absent from the accessibility tree.
+      Removing the wrapper is what fixes that, so the centring has to live on the
+      figure. max() keeps the gutter at narrow widths and grows it to centre the
+      content column once the viewport is wider than the shell.
+    */
+    padding-inline: max(var(--quote-gutter), calc((100% - var(--quote-content)) / 2));
+  }
+  .quote-band blockquote {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    line-height: 1.1;
+    letter-spacing: var(--text-h2--letter-spacing);
+    /* 400, not the h2 step's 800. At 52px this is a pull quote, not a heading,
+       and it must not compete with the section h2 above it. */
+    font-weight: 400;
+    font-style: normal;
+    /* Only a readability cap below 70rem, where there is no grid to set the
+       measure. Above 70rem the rule immediately below is narrower and governs. */
+    max-width: 36ch;
+    color: var(--color-text);
+    text-wrap: pretty;
+  }
+  @media (min-width: 70rem) {
+    /*
+      The measure, stated as the arithmetic of the 12 column grid the rest of the
+      site uses rather than as a character count: nine columns plus the eight gaps
+      between them, which for a 12 column track with a 2.5rem gap works out at
+      0.75 * content - 0.25 * gap. Measured at a 1440 viewport that is 920px
+      inside a 1240px content column, so the quote runs 63.9% of the band, and at
+      1120 it is 770px of 1120, or 68.8%.
+
+      This rule has to come AFTER the max-width: 36ch above it. Both selectors
+      carry one class and one type, so they have equal specificity and source
+      order decides; declared first, the 36ch cap won and the quote measured
+      1151px, which is 80% of the band and not the 12 column span at all.
+    */
+    .quote-band > blockquote {
+      max-width: calc(75% - 0.625rem);
+    }
+  }
+  /* Accent budget, seventh slot, added deliberately: the operative clause of the
+     one pull quote on the site, exactly the device the one h1 uses on the word
+     "underneath". It is here because the tail of the homepage carried no accent
+     at all, and it is one clause in one band and nowhere else. */
+  .quote-band .accent-word {
+    color: var(--color-accent);
+  }
+  .quote-band figcaption {
+    margin-top: 1.5rem;
+  }
+
+  /* ---------- CountLine ---------- */
+
+  .count-line {
+    margin: 1.5rem 0 0;
+    text-align: right;
+  }
+
+  /* ---------- Consumer helpers shared by more than one page ---------- */
+
+  /* The h1 on the homepage. Three hard set lines at 640px and above, one
+     naturally wrapping paragraph below that. Spans, never <br>. */
+  .h1-line {
+    display: inline;
+  }
+  .accent-word {
+    color: var(--color-accent);
+  }
+  @media (min-width: 40rem) {
+    .h1-line {
+      display: block;
+    }
+  }
+
+  .mailto-xl {
+    font-family: var(--font-mono);
+    font-size: var(--text-mailto);
+    font-weight: var(--text-mailto--font-weight);
+    line-height: var(--text-mailto--line-height);
+    letter-spacing: var(--text-mailto--letter-spacing);
+    overflow-wrap: anywhere;
+  }
+
+  /* The capability matrix in #stack and on /resume. A heading plus list
+     structure, never a <table>: a table that becomes display: block below
+     768px destroys the row association it was chosen for. */
+  .matrix {
+    border-top: 1px solid var(--color-edge);
+  }
+  .matrix-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.75rem;
+    column-gap: 1.5rem;
+    align-items: baseline;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--color-edge);
+    border-radius: 0;
+  }
+  .matrix-row h3 {
+    margin: 0;
+  }
+  @media (min-width: 56.25rem) {
+    .matrix-row {
+      grid-template-columns: 168px minmax(0, 1fr);
+      padding-block: 1.125rem;
+    }
+  }
+}
+
+/*
+  ============================================================================
+  MOTION PRE-STATES. Read the polarity before you edit a selector here.
+
+  Not one rule below is keyed on html.js. .js is added by an inline head script
+  before first paint, which means it is present whether or not the motion module
+  ever loads, parses or runs, so keying a hidden pre-state on it hides content
+  that nothing is left alive to reveal. That is what happened: with
+  IntersectionObserver removed, 13 .reveal blocks on / and 3 on /projects sat at
+  opacity 0 forever and /projects rendered as header plus footer over a void.
+
+  Every pre-state here is keyed on .is-armed, and .is-armed is added by
+  src/scripts/motion.ts and by nothing else, immediately after the observer that
+  will release it has been constructed. So the hider and the revealer are the
+  same line of script: if the module throws, is-armed is never applied and every
+  element stays in the visible, final, server rendered state it shipped in.
+
+  JS hides AND reveals, or neither. Never CSS hides and JS reveals.
+  ============================================================================
+*/
+.reveal.is-armed {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.reveal.is-armed.is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+/* Span draw in and meter fill. Same polarity, same reason. */
+[data-span].is-armed {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+[data-span].is-armed.is-drawn {
+  transform: scaleX(1);
+  transform-origin: left;
+  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: calc(var(--si, 0) * 60ms);
+}
+[data-meter].is-armed > span {
+  transform: scaleX(0);
+}
+[data-meter].is-armed.is-filled > span {
+  transform: scaleX(var(--fill));
+  transition: transform 700ms ease-out;
+  transition-delay: calc(var(--mi, 0) * 80ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    animation-timeline: auto !important;
+  }
+  /* motion.ts reads prefers-reduced-motion once, at load, and never arms
+     anything when it is set. These four are the belt for the case where the
+     preference is switched on mid session, after elements were already armed:
+     the pre-state is cancelled and nothing is left invisible or scaled to zero. */
+  .reveal.is-armed {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  [data-span].is-armed {
+    transform: none !important;
+  }
+  [data-meter].is-armed > span {
+    transform: scaleX(var(--fill)) !important;
+  }
+  /* The spec's motion table drops transforms rather than shortening them, and
+     the universal rule above only shortens the duration. */
+  .pl-ring {
+    transform: none !important;
+  }
+}

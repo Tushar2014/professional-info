@@ -1,0 +1,64 @@
+---
+import CopyButton from './CopyButton.astro'
+
+export interface KeyValueRow {
+  key: string
+  value: string
+  href?: string
+  copy?: boolean
+}
+
+interface Props {
+  rows: KeyValueRow[]
+  dense?: boolean
+  keyWidth?: string
+  class?: string
+}
+
+const { rows, dense = false, keyWidth = '6.5rem', class: className = '' } = Astro.props
+
+/*
+  .kv-value sets overflow-wrap: anywhere, which is load bearing: without it a
+  mail address wider than its column pushes the whole grid sideways. The cost is
+  that the break lands wherever the line happens to fill. Measured on the hero
+  identity panel, the value column is 228px at a 390px viewport and the address
+  needs 235px, so the break put a single character on the second line, which
+  reads as a rendering fault rather than as a wrapped address.
+
+  This adds wrap opportunities at the two boundaries a reader already knows, in
+  front of the @ and after each /, and only for a value that is one unbreakable
+  token. Anything with a space in it already has real break opportunities and is
+  returned untouched. At 390px the address now breaks 148px then 87px, between
+  the local part and the host. These are opportunities, not breaks: while the
+  value fits on one line nothing moves at all. <wbr> contributes no character,
+  so the accessible name, the copy button payload and a manual selection are all
+  byte identical to the value that was passed in.
+*/
+export function wrapPoints(value: string): string[] {
+  // The narrowest value column anywhere on the site is 158px, at a 320px
+  // viewport, and 158px holds 18 characters at the mono figure step. A token
+  // that short can never be forced to break, so splitting it would add markup
+  // that can never do anything: the /projects style values on the 404 readout
+  // are the case this guard keeps clean.
+  if (value.length <= 18 || /\s/.test(value)) return [value]
+  return value.split(/(?<=\/)|(?=@)/)
+}
+---
+
+<dl class:list={['kv', dense && 'kv-dense', className]} style={`--kv-key-w: ${keyWidth}`}>
+  {
+    rows.map((row) => {
+      const parts = wrapPoints(row.value)
+      const value = parts.map((part, i) => <Fragment>{i > 0 && <wbr />}{part}</Fragment>)
+      return (
+        <div class="kv-row">
+          <dt class="kv-key micro">{row.key}</dt>
+          <dd class:list={['kv-value', row.copy && 'kv-value-copy']}>
+            {row.href ? <a href={row.href}>{value}</a> : <span>{value}</span>}
+            {row.copy && <CopyButton value={row.value} label={`Copy ${row.key.toLowerCase()} to clipboard`} />}
+          </dd>
+        </div>
+      )
+    })
+  }
+</dl>

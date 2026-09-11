@@ -1,0 +1,55 @@
+---
+interface Props {
+  value: string
+  label: string
+}
+
+const { value, label } = Astro.props
+---
+
+<button type="button" class="copy-btn" data-copy={value} aria-label={label}>
+  <span class="copy-glyph" aria-hidden="true"><i></i><i></i></span>
+</button>
+<span class="copy-state micro" aria-live="polite"></span>
+
+<script>
+  // One delegated listener for every CopyButton on the page. If the Clipboard API
+  // is unavailable the buttons are removed on load, so a control that cannot work
+  // is never presented. The value is always also reachable as a mailto link
+  // beside the button, so nothing is lost when this script does not run at all.
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.copy-btn'))
+
+  if (buttons.length > 0) {
+    if (!navigator.clipboard) {
+      for (const button of buttons) {
+        button.nextElementSibling?.remove()
+        button.remove()
+      }
+    } else {
+      const timers = new WeakMap<HTMLButtonElement, number>()
+
+      for (const button of buttons) {
+        button.addEventListener('click', async () => {
+          const value = button.dataset.copy
+          const state = button.nextElementSibling
+          if (!value) return
+          try {
+            await navigator.clipboard.writeText(value)
+          } catch {
+            return
+          }
+          if (!(state instanceof HTMLElement)) return
+          state.textContent = 'COPIED'
+          const existing = timers.get(button)
+          if (existing) window.clearTimeout(existing)
+          timers.set(
+            button,
+            window.setTimeout(() => {
+              state.textContent = ''
+            }, 1600),
+          )
+        })
+      }
+    }
+  }
+</script>

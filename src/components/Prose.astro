@@ -1,0 +1,739 @@
+---
+export interface RailRow {
+  key: string
+  value: string
+}
+
+/** The shape Astro's `render()` returns in `headings`. */
+export interface RailHeading {
+  depth: number
+  slug: string
+  text: string
+}
+
+interface Props {
+  class?: string
+  /**
+   * Rendered headings straight from `render(entry)`. Only depth 2 is used, and
+   * the slugs are the ones Astro already put on the rendered h2 elements, so the
+   * jump links are anchors into real ids rather than a guess at a slug.
+   * Pass nothing and no rail is rendered at all.
+   */
+  headings?: RailHeading[]
+  /** Mono key and value rows at the head of the rail. */
+  meta?: RailRow[]
+  /** Accessible name for the rail's complementary landmark. */
+  railLabel?: string
+}
+
+const { class: className = '', headings = [], meta = [], railLabel = 'Article readout' } =
+  Astro.props
+
+/*
+  A general Markdown container, plus the two column article body it sits in. It
+  is consumed by /projects/<slug> and by /blog/<slug>, so nothing in here is
+  project specific and nothing in here knows what collection produced the body
+  it wraps.
+
+  Why the rail lives here rather than in each page: it is the same instrument on
+  both templates, its CSS is 100 lines and its script is one behaviour, so
+  duplicating it across two page files would guarantee the two drift. The pages
+  supply the DATA (a date or a timeframe, a reading length, the rendered
+  headings) and this component supplies the geometry, the chrome and the
+  behaviour.
+
+  The right column was previously empty for the entire height of the page: at a
+  1440 viewport the measure ran x=207 to x=876 and 564px, 39% of the screen, had
+  nothing in it from the first line to the last. The rail is what occupies it.
+
+  Headings inside prose start at h2, because the page h1 is always the article
+  title. Nothing in this file authors content: it renders the caller's data and
+  styles whatever the slot receives.
+*/
+const sections = headings.filter((h) => h.depth === 2)
+const hasRail = sections.length > 0 || meta.length > 0
+---
+
+<div class:list={['article-body', hasRail && 'grid12']}>
+  {
+    hasRail && (
+      <aside class="article-rail" data-rail aria-label={railLabel}>
+        {
+          meta.length > 0 && (
+            <dl class="rail-meta">
+              {meta.map((row) => (
+                <div class="rail-row">
+                  <dt class="micro rail-key">{row.key}</dt>
+                  <dd class="rail-value">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+
+        {
+          /*
+            Reading position. This row is an affordance that only exists while
+            the script is alive, so the script ADDS the attribute that reveals
+            it. Nothing here hides authored content: with the script dead the row
+            is simply not offered, and the row carries no information of its own.
+            It is aria-hidden because a percentage that changes on every frame is
+            noise in a screen reader, and the same position is already conveyed
+            to assistive technology by aria-current on the jump links.
+          */
+        }
+        <div class="rail-row rail-pos" aria-hidden="true">
+          <span class="micro rail-key">POSITION</span>
+          <span class="rail-value rail-pos-value" data-rail-pos>0%</span>
+          <span class="rail-meter" data-rail-meter><span /></span>
+        </div>
+
+        {
+          sections.length > 0 && (
+            <nav class="rail-toc" aria-label="Sections in this article">
+              <p class="micro rail-key rail-toc-key">CONTENTS</p>
+              <ol>
+                {sections.map((h, i) => (
+                  <li>
+                    <a href={`#${h.slug}`}>
+                      <span class="rail-index" aria-hidden="true">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span class="rail-toc-text">{h.text}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+      </aside>
+    )
+  }
+
+  {
+    /*
+      The column rule. An empty grid child that spans column 8, the gutter
+      between the measure and the rail, and draws a hairline down its right edge
+      for the full height of the body. The rail cannot draw this itself: the rail
+      is sticky, so a border on it travels with it and stops where it stops. This
+      is the site's own way of showing structure, and it is what makes the two
+      columns read as one instrument rather than as text with a widget beside it.
+    */
+  }
+  {hasRail && <div class="article-gutter" role="presentation" aria-hidden="true" />}
+
+  <div class:list={['prose', className]}><slot /></div>
+</div>
+
+<style>
+  /*
+    THE ARTICLE BODY. Two columns above 1120px: the measure in columns 1 to 7 and
+    the rail in columns 9 to 12, with column 8 left as the gutter the rail's
+    hairline hangs in. Below 1120px there is no room for a second column, so both
+    children span the full width and the rail becomes a ruled block above the
+    body, where a contents list is the conventional place for it anyway. The rail
+    is first in the DOM so that collapse needs no order property and the reading
+    order stays header, contents, body.
+  */
+  .article-body > .prose,
+  .article-rail {
+    grid-column: 1 / -1;
+  }
+
+  /*
+    Below the breakpoint the prose box still has to be capped, because the children
+    that opt OUT of the measure, an h2 and its rule, a code block, a table, take
+    the width of THIS box rather than the width of the copy. Measured without this
+    line: at a 1024 viewport the box was 944px while a paragraph was 711px, so
+    every h2 hairline ran 233px past the last word it belonged to, which is the
+    same stray rule the redesign is removing elsewhere.
+
+    2.5rem of pad, because --prose-measure is 68ch and ch is resolved against the
+    font of the element that uses it: 669px here, where .prose is 16px, and 711px
+    on a paragraph, which is 17px. 669 + 40 lands the box at 709px, 2px inside the
+    paragraph's own cap, so the copy is bound by the box and an h2 rule is flush
+    with the last line rather than hanging past it. Measured at 1024, 900 and 768:
+    paragraph width and h2 width are equal to the pixel at all three. That is also
+    what the wide layout does, where the grid track is 707px and the paragraph's
+    711px cap never binds.
+  */
+  .article-body > .prose {
+    max-width: calc(var(--prose-measure) + 2.5rem);
+  }
+
+  /*
+    Collapsed, the rail is a strip, not a column: one ruled band under the header
+    holding the same values side by side. See the second min-width block below for
+    why the vertical form cannot simply be left to inherit.
+  */
+  .article-rail {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-edge);
+  }
+
+  .article-gutter {
+    display: none;
+  }
+
+  @media (min-width: 70rem) {
+    /*
+      grid-row is explicit on all three children and it is load bearing. Auto
+      placement is sparse: it keeps a cursor, and because the rail comes first in
+      the DOM and sits in columns 9 to 13, the gutter's column 8 and the measure's
+      column 1 are both BEHIND the cursor, so each got pushed onto a new row.
+      Measured before this line: the rail's box ended at y=1549 and the prose began
+      at y=1549, three stacked rows that only looked like two columns.
+    */
+    .article-body > .prose {
+      grid-column: 1 / 8;
+      grid-row: 1;
+      /* The grid track is now the cap, so release the explicit one. */
+      max-width: none;
+    }
+    .article-gutter {
+      display: block;
+      grid-column: 8 / 9;
+      grid-row: 1;
+      border-right: 1px solid var(--color-hairline);
+    }
+    .article-rail {
+      grid-column: 9 / 13;
+      grid-row: 1;
+      /* Sticky within its own grid area, which spans the whole body row, so the
+         readout stays beside the measure for the full length of the article.
+         60px is .site-header-inner's height. */
+      position: sticky;
+      top: calc(60px + 2rem);
+      align-self: start;
+      max-height: calc(100dvh - 60px - 4rem);
+      overflow-y: auto;
+      margin-bottom: 0;
+      padding: 0;
+      border-block: 0;
+    }
+  }
+
+  /*
+    THE STRIP. The base form of every row is horizontal, label then value, wrapping
+    as it runs out of room. The vertical form is the exception and it is declared
+    once, inside the breakpoint, on the only geometry that has a narrow column to
+    justify it.
+
+    Measured with the vertical form as the base: at a 900 viewport each meta row
+    was 828px wide with its value at x=136 and roughly 690px of the row empty after
+    it, and every hairline ran the full 828px under a two word label. That is the
+    same defect in miniature that this whole assignment exists to remove.
+  */
+  .rail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 2.5rem;
+    margin: 0;
+  }
+
+  .rail-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    padding-block: 0.375rem;
+  }
+
+  .rail-key {
+    margin: 0;
+  }
+
+  /* Every value in the rail is a date, a span or a figure, so every value in the
+     rail is mono. */
+  .rail-value {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-figure-sm);
+    line-height: var(--text-figure-sm--line-height);
+    letter-spacing: var(--text-figure-sm--letter-spacing);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+  }
+
+  .rail-pos {
+    display: none;
+  }
+
+  /* Revealed by the script, never hidden by it. */
+  .article-rail[data-rail-live] .rail-pos {
+    display: flex;
+  }
+
+  .rail-meter {
+    display: block;
+    width: 4rem;
+    height: 2px;
+    background: var(--meter-track);
+    align-self: center;
+  }
+
+  .rail-meter > span {
+    display: block;
+    height: 100%;
+    background: var(--color-steel-bar);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 120ms linear;
+  }
+
+  .rail-toc {
+    margin-top: 1rem;
+  }
+
+  .rail-toc-key {
+    margin: 0 0 0.5rem;
+  }
+
+  .rail-toc ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rail-toc a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding-block: 0.375rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    border-radius: 2px;
+  }
+
+  .rail-toc a:hover,
+  .rail-toc a:focus-visible {
+    color: var(--color-text);
+  }
+
+  /* The index is mono and the label is Chivo, which is the same split every
+     numbered row on the site uses. */
+  .rail-index {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--text-micro--letter-spacing);
+    color: var(--color-steel);
+  }
+
+  .rail-toc-text {
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    text-wrap: pretty;
+  }
+
+  /* The one place the rail marks a state: the section the reader is inside.
+     Steel, not accent, because this is ambient system data. */
+  .rail-toc a[aria-current] {
+    color: var(--color-text);
+  }
+
+  .rail-toc a[aria-current] .rail-index {
+    color: var(--color-text);
+  }
+
+  /*
+    THE COLUMN. Second block rather than a set of additions to the layout block
+    higher up, and it has to stay after every rule it overrides: these selectors
+    carry the same one class as the base rules, so with equal specificity source
+    order is the only thing deciding, and a media query does not raise
+    specificity. Written above the strip, none of it would apply.
+  */
+  @media (min-width: 70rem) {
+    .rail-meta {
+      display: block;
+    }
+
+    .rail-row {
+      display: grid;
+      grid-template-columns: 5.5rem minmax(0, 1fr);
+      gap: 0.75rem;
+      padding-block: 0.625rem;
+      border-bottom: 1px solid var(--color-hairline);
+    }
+
+    /*
+      Restated, and it is not redundant. The position row carries both rail-row
+      and rail-pos, one class each, so source order alone decides which display
+      wins, and the .rail-row rule directly above is now the later of the two.
+      Measured without this block: with JavaScript disabled the row was 387x51 and
+      reading 0% forever, an affordance offered by a script that was never there.
+    */
+    .rail-pos {
+      display: none;
+    }
+
+    .article-rail[data-rail-live] .rail-pos {
+      display: grid;
+      grid-template-columns: 5.5rem auto minmax(0, 1fr);
+    }
+
+    /* The meter takes the rest of the row once the row is a grid. */
+    .rail-meter {
+      width: auto;
+    }
+
+    .rail-toc {
+      margin-top: 1.5rem;
+    }
+
+    .rail-toc-key {
+      margin-bottom: 0.75rem;
+    }
+
+    .rail-toc ol {
+      display: block;
+    }
+
+    .rail-toc li + li {
+      border-top: 1px solid var(--color-hairline);
+    }
+
+    .rail-toc a {
+      display: grid;
+      grid-template-columns: 1.75rem minmax(0, 1fr);
+      gap: 0.625rem;
+      padding-block: 0.625rem;
+    }
+
+    /* The row is a grid now, so the index no longer shares a baseline with the
+       label and has to be nudged onto the label's first line by hand. */
+    .rail-index {
+      padding-top: 0.15em;
+    }
+  }
+</style>
+
+<style is:global>
+  /*
+    Every descendant is matched through :where() so specificity stays at zero
+    and a page can override any single rule with a plain class. The block is
+    intentionally unlayered, which is what lets it win over the element level
+    heading sizes declared in global.css @layer base.
+  */
+  /*
+    THE MEASURE, AND HOW ANYTHING BREAKS OUT OF IT.
+
+    The 68ch measure is NOT on .prose. It is on .prose's children, through a
+    custom property, and the reason is that a block cannot be wider than its own
+    container without a negative margin, and this site has no negative margin
+    technique anywhere. With the cap on the children instead, running copy keeps
+    its 68ch and a figure, a code block, a rule or a quote band can opt out and
+    run the full width of the column simply by not inheriting the cap.
+
+    Both selectors below carry exactly one class, so they have equal specificity
+    and source order decides. The opt out has to stay second.
+  */
+  .prose {
+    --prose-measure: 68ch;
+    max-width: none;
+  }
+
+  .prose > :where(*) {
+    max-width: var(--prose-measure);
+  }
+
+  /* What is allowed to break the measure. A heading breaks it so its rule spans
+     the whole column; code, tables and images break it because they are figures
+     and a figure is not running copy; .quote-band breaks it because it is a full
+     bleed device that happens to have been placed inside a body. */
+  .prose > :where(h2, pre, table, img, figure, hr, .quote-band, .prose-wide) {
+    max-width: none;
+  }
+
+  .prose > :where(:first-child) {
+    margin-top: 0;
+  }
+
+  .prose > :where(:last-child) {
+    margin-bottom: 0;
+  }
+
+  .prose :where(p) {
+    margin-block: 1.25rem;
+    font-size: var(--text-prose);
+    line-height: var(--text-prose--line-height);
+    letter-spacing: var(--text-prose--letter-spacing);
+    font-weight: var(--text-prose--font-weight);
+    color: var(--color-text);
+  }
+
+  /*
+    An h2 is a station, not a bigger line of text. It carries a hairline across
+    the full width of the column, which is wider than the measure, and a short
+    steel tick sitting on that hairline. That is what interrupts the column:
+    without it the body was one unbroken 1788px strip of 17px copy.
+
+    scroll-margin-top exists because the header is sticky at 60px and a jump link
+    that lands its target underneath the header looks like a broken anchor.
+  */
+  .prose :where(h2) {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: var(--text-h3--line-height);
+    letter-spacing: var(--text-h3--letter-spacing);
+    font-weight: var(--text-h3--font-weight);
+    position: relative;
+    margin-top: 3.5rem;
+    margin-bottom: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-hairline-strong);
+    scroll-margin-top: calc(60px + 2rem);
+  }
+
+  .prose :where(h2):first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  /* Decorative: empty generated content with a background, so it is a mark and
+     not a string any screen reader has to read out. */
+  .prose :where(h2)::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 28px;
+    height: 2px;
+    background: var(--color-steel);
+  }
+
+  .prose :where(h2):first-child::before {
+    display: none;
+  }
+
+  .prose :where(h3) {
+    font-family: var(--font-display);
+    font-size: var(--text-h4);
+    line-height: var(--text-h4--line-height);
+    letter-spacing: var(--text-h4--letter-spacing);
+    font-weight: var(--text-h4--font-weight);
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    scroll-margin-top: calc(60px + 2rem);
+  }
+
+  .prose :where(h4) {
+    font-family: var(--font-display);
+    font-size: var(--text-h4);
+    line-height: var(--text-h4--line-height);
+    font-weight: var(--text-h4--font-weight);
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-muted);
+  }
+
+  .prose :where(strong) {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  /*
+    Chivo is requested in normal style only, so no italic file is loaded and the
+    browser synthesises the oblique. That is accepted rather than paying for a
+    second font file to italicise a handful of words.
+  */
+  .prose :where(em) {
+    font-style: italic;
+  }
+
+  .prose :where(ul),
+  .prose :where(ol) {
+    margin-block: 1.25rem;
+    padding-left: 1.5rem;
+  }
+
+  .prose :where(ul) {
+    list-style: disc;
+  }
+
+  .prose :where(ol) {
+    list-style: decimal;
+  }
+
+  .prose :where(li) {
+    margin-block: 0.5rem;
+    font-size: var(--text-prose);
+    line-height: var(--text-prose--line-height);
+    color: var(--color-text);
+  }
+
+  /* Markers are steel. The accent is never spent on a list bullet. */
+  .prose :where(li)::marker {
+    color: var(--color-steel);
+  }
+
+  .prose :where(li) :where(p) {
+    margin-block: 0.5rem;
+  }
+
+  .prose :where(blockquote) {
+    margin-block: 1.75rem;
+    margin-inline: 0;
+    border-left: 2px solid var(--color-steel);
+    padding-left: 1.25rem;
+    color: var(--color-muted);
+  }
+
+  .prose :where(blockquote) :where(p) {
+    color: var(--color-muted);
+  }
+
+  .prose :where(:not(pre) > code) {
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+    letter-spacing: var(--text-code--letter-spacing);
+    background: var(--color-raised);
+    border-radius: var(--radius-chip);
+    padding: 2px 6px;
+  }
+
+  /*
+    The Shiki theme paints its own background on <pre>. It is overridden here so
+    a code block sits on the same surface as every other panel on the site.
+  */
+  .prose :where(pre) {
+    margin-block: 1.75rem;
+    padding: 1.25rem;
+    border: 1px solid var(--color-edge);
+    border-radius: var(--radius-chip);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+    line-height: var(--text-code--line-height);
+    background-color: var(--color-surface) !important;
+  }
+
+  .prose :where(pre) :where(code) {
+    font-family: inherit;
+    font-size: inherit;
+    background: none;
+    padding: 0;
+  }
+
+  .prose :where(hr) {
+    border: 0;
+    border-top: 1px solid var(--color-edge);
+    margin-block: 3rem;
+  }
+
+  .prose :where(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-chip);
+  }
+
+  .prose :where(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-block: 1.75rem;
+    font-size: var(--text-small);
+  }
+
+  .prose :where(th),
+  .prose :where(td) {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+
+  .prose :where(th) {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--text-micro--letter-spacing);
+    text-transform: uppercase;
+    color: var(--color-muted);
+    font-weight: 500;
+  }
+</style>
+
+<script>
+  // A horizontally scrollable region has to be reachable by keyboard. The
+  // attribute is added by script rather than in markup because it is only
+  // meaningful once the block can actually overflow, and because a page with
+  // JavaScript off still renders and scrolls the block by touch or trackpad.
+  for (const block of document.querySelectorAll<HTMLElement>('.prose pre')) {
+    block.setAttribute('tabindex', '0')
+  }
+
+  /*
+    THE RAIL'S LIVE READING POSITION.
+
+    Read the polarity before editing anything here. Every state this script
+    touches is state that only makes sense while the script is running, and it is
+    ADDED by the script: data-rail-live is what reveals the position row, and
+    aria-current is what marks the section. Nothing in the rail is hidden by CSS
+    waiting for JavaScript to un-hide it. If any line below throws, the rail keeps
+    its date, its length and every jump link, all server rendered, and the only
+    thing missing is a percentage that could not have been correct anyway.
+
+    There is no IntersectionObserver here on purpose. Position and current section
+    are both a function of the same scroll offset, so one rAF throttled read of
+    the layout serves both, and there is one failure mode instead of two.
+  */
+  const rail = document.querySelector<HTMLElement>('[data-rail]')
+  const prose = document.querySelector<HTMLElement>('.prose')
+
+  if (rail && prose) {
+    const readout = rail.querySelector<HTMLElement>('[data-rail-pos]')
+    const meter = rail.querySelector<HTMLElement>('[data-rail-meter] > span')
+    const links = Array.from(rail.querySelectorAll<HTMLAnchorElement>('.rail-toc a'))
+    const targets = links.map((a) => {
+      const id = a.getAttribute('href')?.slice(1) ?? ''
+      return id ? document.getElementById(decodeURIComponent(id)) : null
+    })
+
+    // The offset at which a heading counts as the one being read: the sticky
+    // header plus a line of breathing room.
+    const HEADING_LINE = 140
+
+    let queued = false
+
+    const paint = (): void => {
+      queued = false
+
+      const box = prose.getBoundingClientRect()
+      const top = box.top + window.scrollY
+      const height = box.height
+      // How much of the body has passed the bottom of the viewport, which is the
+      // honest definition of how far through the reading a person is.
+      const seen = window.scrollY + window.innerHeight - top
+      const ratio = height > 0 ? Math.min(1, Math.max(0, seen / height)) : 0
+
+      if (readout) readout.textContent = `${Math.round(ratio * 100)}%`
+      if (meter) meter.style.transform = `scaleX(${ratio})`
+
+      let current = -1
+      for (let i = 0; i < targets.length; i += 1) {
+        const t = targets[i]
+        if (t && t.getBoundingClientRect().top <= HEADING_LINE) current = i
+      }
+      for (let i = 0; i < links.length; i += 1) {
+        if (i === current) links[i].setAttribute('aria-current', 'location')
+        else links[i].removeAttribute('aria-current')
+      }
+    }
+
+    const schedule = (): void => {
+      if (queued) return
+      queued = true
+      requestAnimationFrame(paint)
+    }
+
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule, { passive: true })
+
+    // Paint first, reveal second, so the row is never shown holding a placeholder.
+    paint()
+    rail.setAttribute('data-rail-live', '')
+  }
+</script>

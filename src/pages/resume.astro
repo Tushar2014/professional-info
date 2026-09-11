@@ -1,0 +1,413 @@
+---
+import Layout from '../layouts/Layout.astro'
+import KeyValue from '../components/KeyValue.astro'
+import LedgerRow from '../components/LedgerRow.astro'
+import Pill from '../components/Pill.astro'
+import { profile } from '../data/profile'
+import { formatRange } from '../data/profile.schema'
+// print.css is NOT imported here. It is imported by BaseHead.astro so the ink
+// flip reaches every route: imported by this page alone it landed in this page's
+// bundle and printing anything else gave light grey text on white paper.
+
+const linkedin = profile.socials[0]
+const degree = profile.education[0]
+
+const summaryRows = [
+  { key: 'ROLE', value: `${profile.role}, ${profile.experience[0].company}` },
+  { key: 'LOCATION', value: profile.location },
+  { key: 'MAIL', value: profile.email, href: `mailto:${profile.email}` },
+  { key: 'LINKEDIN', value: linkedin.href.replace('https://', ''), href: linkedin.href },
+]
+
+const educationRows = [
+  { key: 'DEGREE', value: degree.degree },
+  { key: 'INSTITUTION', value: degree.institution },
+  { key: 'YEARS', value: formatRange(degree.start, degree.end) },
+]
+
+// The rail's second block. Every target is a section that already exists on this
+// page, so the list cannot drift from the document, and it is screen chrome only:
+// print.css hides site navigation and the scoped print rules below hide this too.
+const contents = [
+  { href: '#cv-experience', label: 'EXPERIENCE' },
+  { href: '#cv-skills', label: 'SKILLS' },
+  { href: '#cv-education', label: 'EDUCATION' },
+  { href: '#cv-outcomes', label: 'MEASURED OUTCOMES' },
+]
+
+// The same eight measured outcomes the homepage carries, in the dark palette
+// here rather than in the bone band. They are transcribed rather than imported
+// because no shared module owns them: every figure traces to the resume Tushar
+// already circulates.
+const outcomes = [
+  { label: 'API LATENCY', figure: '-60%', context: 'Caching layers added to backend microservices.' },
+  { label: 'THROUGHPUT', figure: '+35%', context: 'The same services, after that caching work.' },
+  {
+    label: 'SYNC POLLING',
+    figure: '30s to 5s',
+    context: 'SQL indexing and partitioning in a high load sync service.',
+  },
+  {
+    label: 'EXTRACTION ACCURACY',
+    figure: '96%',
+    context: 'More resilient enrichment logic in a document pipeline.',
+  },
+  { label: 'TEST COVERAGE', figure: '80% to 95%', context: 'Structured suites and coverage thresholds.' },
+  { label: 'ANNOTATION TIME', figure: '-30%', context: 'Heuristic auto annotation pipelines.' },
+  {
+    label: 'SHARED LIBRARIES',
+    figure: '10+ teams',
+    context: 'Service initialisation libraries that removed most duplicated setup code.',
+  },
+  { label: 'LIBRARY SIZE', figure: '-30%', context: 'Legacy services refactored for modularity.' },
+]
+---
+
+<Layout title="Resume, Tushar Chauhan" description={profile.bio} activeNav="resume">
+  <article class="cv">
+    <div class="shell">
+      <!--
+        Two columns on screen, one column on paper. The rail is DOM ordered
+        immediately after the header, so the reading order, the tab order and the
+        printed order are all the order this document had when it was a single
+        column: name, contact readout, experience, skills, education, outcomes.
+        Grid placement, not DOM order, is what moves the rail to the right.
+      -->
+      <div class="cv-grid">
+        <header class="cv-head">
+          <h1>{profile.name}</h1>
+          <p class="micro cv-contact">
+            <span>BACKEND ENGINEER · {profile.location.toUpperCase()} · </span>
+            <a href={`mailto:${profile.email}`}>{profile.email}</a>
+            <span aria-hidden="true"> · </span>
+            <a href={linkedin.href}>{linkedin.label}</a>
+          </p>
+
+          <div class="cv-rule" role="presentation"></div>
+
+          <p class="lede cv-bio">{profile.bio}</p>
+
+          <div class="cv-actions">
+            <button type="button" id="print-resume" class="btn btn-primary">Print this page</button>
+            <p class="micro cv-print-hint">OR USE YOUR BROWSER PRINT COMMAND TO SAVE A PDF</p>
+          </div>
+        </header>
+
+        <aside class="cv-rail">
+          <section class="cv-section cv-rail-block" aria-labelledby="cv-summary">
+            <h2 class="label cv-h2" id="cv-summary">SUMMARY</h2>
+            <KeyValue rows={summaryRows} keyWidth="5.5rem" />
+          </section>
+
+          <nav class="cv-index" aria-label="Sections of this resume">
+            <p class="label cv-index-key">CONTENTS</p>
+            <ul class="cv-index-list">
+              {
+                contents.map((item) => (
+                  <li>
+                    <a class="micro" href={item.href}>
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+        </aside>
+
+        <div class="cv-main">
+        <section class="cv-section" aria-labelledby="cv-experience">
+          <h2 class="label cv-h2" id="cv-experience">EXPERIENCE</h2>
+          {
+            profile.experience.map((role) => (
+              <div class="cv-role">
+                <div class="cv-role-head">
+                  <div class="cv-role-id">
+                    <h3>{role.company}</h3>
+                    <p class="cv-role-title">{role.title}</p>
+                    {role.team && <p class="micro cv-role-team">{role.team}</p>}
+                  </div>
+                  <p class="date figure-sm cv-role-date">{formatRange(role.start, role.end)}</p>
+                </div>
+                <p class="body-copy cv-role-summary">{role.summary}</p>
+                <ol class="highlights">
+                  {role.highlights.map((highlight, i) => (
+                    <li>
+                      <span class="figure-sm hl-index" aria-hidden="true">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      {highlight}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            ))
+          }
+        </section>
+
+        <section class="cv-section" aria-labelledby="cv-skills">
+          <h2 class="label cv-h2" id="cv-skills">SKILLS</h2>
+          <div class="matrix">
+            {
+              profile.skills.map((group) => (
+                <div class="matrix-row">
+                  <h3 class="label">{group.group}</h3>
+                  <ul class="pill-row">
+                    {group.items.map((item) => (
+                      <Pill label={item} as="li" />
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <section class="cv-section" aria-labelledby="cv-education">
+          <h2 class="label cv-h2" id="cv-education">EDUCATION</h2>
+          <KeyValue rows={educationRows} />
+        </section>
+
+        <section class="cv-section" aria-labelledby="cv-outcomes">
+          <h2 class="label cv-h2" id="cv-outcomes">MEASURED OUTCOMES</h2>
+          <div class="ledger-grid">
+            {
+              outcomes.map((row) => (
+                <LedgerRow label={row.label} figure={row.figure} context={row.context} />
+              ))
+            }
+          </div>
+          <p class="text-small cv-attribution">
+            Measured at Soroco, 2020 to 2026. Every figure here is from the resume I circulate. My current
+            work is described without numbers.
+          </p>
+        </section>
+
+        <p class="micro cv-close">
+          ALL WORK DESCRIBED IN GENERAL TERMS. FIGURES ARE FROM ROLES AT SOROCO, 2020 TO 2026.
+        </p>
+        </div>
+      </div>
+    </div>
+  </article>
+</Layout>
+
+<script>
+  // Progressive enhancement only. Without this script the mono line beside the
+  // button still tells the reader to use the browser print command.
+  document.getElementById('print-resume')?.addEventListener('click', () => window.print())
+</script>
+
+<style>
+  .cv {
+    padding-block: clamp(3rem, 6vw, 5rem) clamp(4.5rem, 9vw, 7.5rem);
+  }
+  /*
+    ON SCREEN. The document column keeps its 60rem measure and the space that was
+    dead to the right of it now carries the contact readout and the section index,
+    stuck to the viewport so the rail is beside the reader the whole way down a
+    4000px page. Measured at 1440 the emptiness right of the content fell from
+    380px to 100px, which is the shell gutter and nothing else.
+
+    ON PAPER. Every rule that builds the rail is inside a min-width: 70rem query,
+    and print resolves media queries against the sheet, which is 794px on A4 and
+    816px on Letter. Neither reaches 1120px, so on paper this file contributes
+    only the block at the end, and the CV is the single column document it was.
+  */
+  .cv-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cv-main {
+    max-width: 60rem;
+  }
+  /* screen and, not a bare min-width: every rule that builds the rail is a screen
+     rule, so no engine can bring any of it to paper however it resolves a width
+     query while printing. */
+  @media screen and (min-width: 70rem) {
+    .cv-grid {
+      grid-template-columns: minmax(0, 1fr) 19rem;
+      column-gap: clamp(2rem, 4vw, 3.5rem);
+    }
+    .cv-head {
+      grid-column: 1 / -1;
+    }
+    /* Explicit placement, so the rail sits second in the DOM and second from the
+       left on screen without a single reordering of the printed document. */
+    .cv-main {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    .cv-rail {
+      grid-column: 2;
+      grid-row: 2;
+      align-self: start;
+      position: sticky;
+      /* The header is 61px including its rule, and it is sticky above 35rem of
+         viewport height. */
+      top: calc(61px + 1.75rem);
+      padding-left: clamp(1.5rem, 2.5vw, 2rem);
+      border-left: 1px solid var(--color-hairline);
+      /* The same step .cv-section uses, moved onto the rail, so the rail's first
+         rule lands on exactly the same baseline as the EXPERIENCE rule beside it
+         instead of 72px above it. Measured at 1440: both rules at y 584. */
+      margin-top: clamp(3rem, 5vw, 4.5rem);
+    }
+    .cv-rail .cv-section {
+      margin-top: 0;
+    }
+    /*
+      In a 19rem rail a key beside its value leaves about 171px for the value, and
+      the mail address needs about 227px, so every contact row broke at its <wbr>
+      and read as two half addresses. Stacked, each value has the whole rail and
+      the address sits on one line. :global is required because .kv-row belongs to
+      KeyValue.astro and this page's scope does not reach it. It applies only
+      inside .cv-rail, so no other readout on the site is touched.
+    */
+    .cv-rail :global(.kv-row) {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0.25rem;
+    }
+  }
+
+  /* The anchor target is the h2 that carries the id, not the section around it.
+     Measured: without this every jump from the index put the heading at top 0,
+     which is underneath the 61px sticky header. */
+  .cv-h2 {
+    scroll-margin-top: calc(61px + 1.5rem);
+  }
+
+  .cv-index {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-edge);
+  }
+  .cv-index-key {
+    margin: 0 0 1rem;
+  }
+  .cv-index-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .cv-index-list li + li {
+    border-top: 1px solid var(--color-hairline);
+  }
+  .cv-index-list a {
+    display: block;
+    padding-block: 0.625rem;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+  .cv-index-list a:hover,
+  .cv-index-list a:focus-visible {
+    color: var(--color-text);
+  }
+  .cv h1 {
+    margin: 0;
+  }
+  .cv-contact {
+    margin: 1.25rem 0 0;
+    line-height: 1.7;
+  }
+  .cv-rule {
+    height: 1px;
+    margin-block: 2rem;
+    background: var(--color-edge);
+  }
+  .cv-bio {
+    margin: 0;
+    max-width: 62ch;
+  }
+  .cv-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.25rem;
+    margin-top: 2rem;
+  }
+  .cv-print-hint {
+    margin: 0;
+  }
+  /* .btn is written for an <a>. A <button> needs the native appearance switched
+     off, otherwise the platform control paints over the accent fill. */
+  #print-resume {
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .cv-section {
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-edge);
+  }
+  .cv-h2 {
+    margin: 0 0 1.5rem;
+  }
+
+  .cv-role + .cv-role {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-hairline);
+  }
+  .cv-role-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+  }
+  .cv-role-id h3 {
+    margin: 0;
+  }
+  .cv-role-title {
+    margin: 0.25rem 0 0;
+    font-size: var(--text-small);
+    color: var(--color-muted);
+  }
+  .cv-role-team {
+    margin: 0.5rem 0 0;
+  }
+  .cv-role-date {
+    margin: 0;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  .cv-role-summary {
+    margin: 1rem 0 0;
+  }
+
+  .cv-attribution {
+    margin: 2rem 0 0;
+    max-width: 60ch;
+    color: var(--color-muted);
+  }
+  .cv-close {
+    margin: clamp(3rem, 5vw, 4.5rem) 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-edge);
+    line-height: 1.6;
+  }
+
+  /*
+    The only page specific print rules on the site, and they exist because this
+    page is the only one with a screen rail. src/styles/print.css is owned by
+    another engineer this wave and is not edited from here. A later pass may
+    promote these three rules into the .cv block of that file.
+  */
+  @media print {
+    /* Page breaking inside a grid container is unreliable across engines, and the
+       sheet needs one flow, so the grid is switched off entirely rather than left
+       as a single track. */
+    .cv-grid {
+      display: block;
+    }
+    .cv-main {
+      max-width: none;
+    }
+    /* A list of in page anchors is worth nothing on paper. */
+    .cv-index {
+      display: none !important;
+    }
+  }
+</style>

@@ -1,0 +1,342 @@
+/*
+  ============================================================================
+  PRINT. Imported by src/components/BaseHead.astro, so it applies to EVERY
+  route.
+
+  It used to be imported by src/pages/resume.astro alone, which meant the ink
+  flip landed in that one page's bundle. Printing any other page then produced
+  near invisible output: the browser strips the background and body colour stayed
+  rgb(232, 237, 245), which is very light grey on white paper. Every route has to
+  survive Ctrl+P, so the flip is global and only the CV's paper rhythm is scoped.
+
+  Two parts, and the boundary matters:
+    1. THE INK FLIP, every route. Tokens, chrome removal, the type scale in
+       points, and the fill and shadow retirement.
+    2. THE CV PAPER LAYOUT, scoped to .cv, which is the root element of
+       /resume alone. Those rules exist to make two credible CV pages and would
+       be wrong applied to a long scrolling page.
+
+  On screen /resume belongs to the site: blue black ground, magenta figures, mono
+  readout rows. On paper it has to be a credible CV.
+
+  Every rule here is unlayered, which in the CSS cascade beats every @layer in
+  global.css regardless of source order. That is the mechanism: redefining the
+  --color-* tokens on :root flips every Tailwind utility and every component
+  class in one place, because global.css was written with a plain @theme block
+  and therefore emits var() references rather than baked hex values.
+  ============================================================================
+*/
+
+@media print {
+  /* ---------------------------------------------------------------------- */
+  /* 1. THE INK FLIP. Every route.                                          */
+  /* ---------------------------------------------------------------------- */
+
+  /*
+    .band-bone is in this selector list on purpose. It re-declares the entire
+    --color-* block on itself, which is a class and therefore outranks :root, so
+    a flip declared only on :root leaves that one section printing its screen
+    palette: measured before this line, the first .label inside the band printed
+    #4f5766 and the first .figure printed #961b50. Both happen to pass on white,
+    which is exactly why it would have gone unnoticed. Flipping both scopes with
+    one selector keeps a single source of truth for the paper palette.
+  */
+  :root,
+  .band-bone {
+    color-scheme: light;
+
+    --color-ground: #ffffff;
+    --color-surface: #ffffff;
+    --color-raised: #ffffff;
+    --color-plate-ground: #ffffff;
+    --color-text: #000000;
+    --color-muted: #3a3a3a;
+    --color-accent: #8e1249;
+    --color-steel: #25406f;
+    --color-edge: #b0b0b0;
+    --color-edge-control: #b0b0b0;
+    --color-hairline: rgba(0, 0, 0, 0.18);
+    --color-hairline-strong: rgba(0, 0, 0, 0.28);
+    --meter-track: #d8d8d8;
+    /* Screen only companions the band declares for its light ground. On paper
+       there is one palette, so they resolve to the same ink as everything else. */
+    --color-accent-bar: #8e1249;
+    --color-steel-bar: #25406f;
+    --color-ink-b: #3a3a3a;
+  }
+
+  /* The bone band paints its own ground on screen. On paper the sheet is the
+     ground, so the fill goes and the rules stay. */
+  .band-bone {
+    background-color: transparent !important;
+  }
+
+  @page {
+    margin: 14mm 15mm;
+  }
+
+  /* Site chrome does not print. Neither does the page grain layer, which would
+     cost a full sheet of toner for an effect paper cannot show, nor any plate:
+     the artwork is decorative and a page of ink is not what it is worth. */
+  .site-header,
+  .site-footer,
+  .skip-link,
+  #print-resume,
+  .cv-actions,
+  .cv-print-hint,
+  .tag-filter,
+  .copy-btn,
+  .copy-state,
+  .plate-figure {
+    display: none !important;
+  }
+
+  body::before {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000;
+  }
+
+  body {
+    font-size: 9.5pt;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  /* Rules, not fills. Nothing on paper carries a background, a shadow or a
+     rounded corner. Borders survive because a hairline is the structure. */
+  *,
+  *::before,
+  *::after {
+    background-image: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    text-shadow: none !important;
+  }
+
+  .panel,
+  .panel-surface,
+  .panel-raised,
+  pre,
+  code {
+    background-color: transparent !important;
+  }
+
+  /* A filled control is the one place where the label colour is the ground
+     token, so flipping the ground to white would print white on white. Both
+     button variants become ink on a ruled box. */
+  .btn,
+  .btn-primary,
+  .btn-secondary {
+    background-color: transparent !important;
+    color: #000000 !important;
+    border: 1px solid #b0b0b0 !important;
+    height: auto;
+    padding: 2pt 5pt;
+  }
+
+  /* The full bleed quote band is a screen device. On paper it is a quote. */
+  .quote-band {
+    padding-block: 8pt;
+    border-block: 1px solid #b0b0b0;
+  }
+
+  /* ---------- Type, restated in points ---------- */
+
+  h1 {
+    font-size: 22pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  h2,
+  h2.label {
+    font-size: 13pt;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    color: #000000;
+  }
+
+  h3,
+  h3.label {
+    font-size: 11pt;
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    color: #000000;
+  }
+
+  .lede {
+    font-size: 10pt;
+    line-height: 1.5;
+    max-width: none;
+  }
+
+  .body-copy,
+  .text-small,
+  .prose p,
+  .prose li,
+  .highlights li,
+  .kv-value {
+    font-size: 9.5pt;
+    line-height: 1.45;
+    max-width: none;
+  }
+
+  .label,
+  .micro,
+  .kv-key,
+  .figure-sm,
+  .date,
+  .hl-index,
+  .pill,
+  .count-line {
+    font-size: 8pt;
+    line-height: 1.3;
+  }
+
+  .figure,
+  .figure-band,
+  .ledger-figure {
+    font-size: 11pt;
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+
+  .quote-band blockquote {
+    font-size: 13pt;
+    line-height: 1.25;
+    max-width: none;
+  }
+
+  a {
+    color: #000000;
+    text-decoration: none;
+  }
+
+  /* An external link is useless on paper unless the address travels with it. */
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 7.5pt;
+    font-family: var(--font-mono);
+    word-break: break-all;
+  }
+
+  /* Except in a readout row, where the value already is the address and printing
+     it twice is the wasted ink this file exists to remove. */
+  .kv-value a[href^='http']::after,
+  .footer-pair a[href^='http']::after {
+    content: none;
+  }
+
+  p {
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* The sheet is the container, so nothing holds a screen measure or a screen
+     gutter. This is general: it is true of every route on paper. */
+  .shell {
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  /* Nothing splits across a sheet where the split would break an association. */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .cv-role,
+  .matrix-row,
+  .ledger-row,
+  .kv-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* 2. THE CV PAPER LAYOUT. Scoped to .cv, the root element of /resume.     */
+  /*    Every rule below is about fitting a two page CV and would be wrong   */
+  /*    applied to a long scrolling page, which is why the scope exists.     */
+  /* ---------------------------------------------------------------------- */
+
+  .cv {
+    padding-block: 0;
+  }
+
+  .cv .cv-col {
+    max-width: none;
+  }
+
+  .cv .cv-section {
+    margin-top: 14pt;
+    padding-top: 8pt;
+  }
+
+  .cv .cv-h2 {
+    margin-bottom: 8pt;
+  }
+
+  .cv .cv-role + .cv-role {
+    margin-top: 12pt;
+    padding-top: 10pt;
+  }
+
+  .cv .cv-role-summary {
+    margin-top: 5pt;
+  }
+
+  .cv .highlights {
+    margin-top: 5pt;
+  }
+
+  .cv .highlights li {
+    margin-block: 2pt;
+  }
+
+  .cv .hl-index {
+    width: 1.6rem;
+  }
+
+  .cv .kv-row {
+    padding-block: 4pt;
+  }
+
+  /* Print media queries resolve against the paper width, which is narrower than
+     the 900px and 1120px screen breakpoints, so the two grids that matter are
+     restated here rather than left to collapse into one tall column. */
+  .cv .matrix-row {
+    grid-template-columns: 90pt minmax(0, 1fr);
+    padding-block: 5pt;
+  }
+
+  .cv .ledger-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 18pt;
+  }
+
+  .cv .ledger-row {
+    padding-block: 5pt;
+  }
+
+  .cv .pill {
+    padding: 1pt 4pt;
+    border-color: #b0b0b0;
+  }
+
+  .cv .cv-attribution {
+    margin-top: 8pt;
+  }
+
+  .cv .cv-close {
+    margin-top: 12pt;
+    padding-top: 6pt;
+  }
+}

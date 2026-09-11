@@ -1,0 +1,13 @@
+---
+interface Props {
+  label: string
+  tone?: 'default' | 'steel'
+  as?: 'span' | 'li'
+}
+
+// Pills render the label verbatim, with no uppercasing, because stack names are
+// mixed case. A pill is never accent coloured.
+const { label, tone = 'default', as: Tag = 'span' } = Astro.props
+---
+
+<Tag class:list={['pill', tone === 'steel' && 'pill-steel']}>{label}</Tag>

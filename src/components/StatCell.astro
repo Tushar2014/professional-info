@@ -1,0 +1,22 @@
+---
+interface Props {
+  label: string
+  figure: string
+  meter: number
+  context: string
+}
+
+const { label, figure, meter, context } = Astro.props
+---
+
+<div class="stat-cell">
+  <p class="label">{label}</p>
+  <p class="figure">{figure}</p>
+  <!-- The track is decorative: the figure above already states the value, so a
+       second announcement of the same number would be noise. The inline --fill is
+       the final, server rendered state. -->
+  <div class="meter" data-meter aria-hidden="true">
+    <span style={`--fill: ${meter}`}></span>
+  </div>
+  <p class="text-small stat-context">{context}</p>
+</div>

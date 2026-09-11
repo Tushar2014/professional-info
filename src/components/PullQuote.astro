@@ -1,0 +1,41 @@
+---
+interface Props {
+  quote: string
+  source: string
+  href: string
+  /**
+   * The operative clause of the quote, verbatim, as a substring of `quote`.
+   * When present it is set in the accent, which is accent budget slot 7 and the
+   * same device the one h1 uses on the word "underneath". Optional: pass nothing
+   * and the quote renders in one colour, exactly as before.
+   */
+  accent?: string
+}
+
+const { quote, source, href, accent } = Astro.props
+
+// Split on the clause rather than asking the caller for three strings, so the
+// quote stays one readable literal at the call site and a typo degrades to a
+// plain quote rather than to a broken sentence.
+const at = accent ? quote.indexOf(accent) : -1
+const before = at >= 0 ? quote.slice(0, at) : quote
+const clause = at >= 0 && accent ? accent : ''
+const after = at >= 0 && accent ? quote.slice(at + accent.length) : ''
+---
+
+<!--
+  A full bleed band: place this as a direct child of the section, outside any
+  .shell wrapper, and it paints edge to edge and insets its own content.
+
+  The blockquote and the figcaption are DIRECT children of the figure on purpose.
+  A figcaption only captions its figure when it is the figure's first or last
+  child, and while this markup had a centring wrapper in between, Chromium
+  reported the band as an unnamed figure: the attribution was on screen and not in
+  the accessibility tree. The shell inset therefore lives on .quote-band in CSS.
+-->
+<figure class="quote-band">
+  <blockquote>
+    {before}{clause && <span class="accent-word">{clause}</span>}{after}
+  </blockquote>
+  <figcaption class="micro"><a href={href}>{source}</a></figcaption>
+</figure>

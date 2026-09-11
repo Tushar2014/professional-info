@@ -1,0 +1,78 @@
+---
+import Panel from './Panel.astro'
+import Pill from './Pill.astro'
+import Plate from './Plate.astro'
+import KeyValue from './KeyValue.astro'
+import Button from './Button.astro'
+
+interface Props {
+  slug: string
+  title: string
+  summary: string
+  role: string
+  timeframe: string
+  stack: string[]
+  tags: string[]
+  featured?: boolean
+  demo?: string
+}
+
+const { slug, title, summary, role, timeframe, stack, tags, featured = false, demo } = Astro.props
+
+// There is deliberately no repo branch in this component. Nothing on this site
+// links to a code host, and entry.data.links.repo is never read.
+const meta = [
+  { key: 'ROLE', value: role },
+  { key: 'TIMEFRAME', value: timeframe },
+  { key: 'STACK', value: stack.join(', ') },
+]
+---
+
+<article class="project-card" data-project data-tags={tags.join(' ')}>
+  <Panel corner="panel" pad={featured ? 'lg' : 'md'} data-interactive>
+    {
+      featured ? (
+        <div class="project-featured-grid">
+          <Plate
+            slug={slug}
+            variant="banner"
+            caption={`PLATE, DETERMINISTIC FROM ${slug.toUpperCase()}`}
+            class="project-card-plate"
+          />
+          <div class="project-body">
+            <p class="label">CASE STUDY</p>
+            <h3>
+              <a href={`/projects/${slug}`}>{title}</a>
+            </h3>
+            <p class="text-small project-summary">{summary}</p>
+            <KeyValue rows={meta} dense keyWidth="5.5rem" />
+            <ul class="pill-row">
+              {tags.map((tag) => (
+                <Pill label={tag} as="li" />
+              ))}
+            </ul>
+            {demo && <Button href={demo} label="Live demo" variant="secondary" />}
+          </div>
+        </div>
+      ) : (
+        <>
+          <Plate slug={slug} variant="card" class="project-card-band" />
+          <div class="project-body">
+            <p class="label">CASE STUDY</p>
+            <h3>
+              <a href={`/projects/${slug}`}>{title}</a>
+            </h3>
+            <p class="text-small project-summary">{summary}</p>
+            <KeyValue rows={meta} dense keyWidth="5.5rem" />
+            <ul class="pill-row">
+              {tags.map((tag) => (
+                <Pill label={tag} as="li" />
+              ))}
+            </ul>
+            {demo && <Button href={demo} label="Live demo" variant="secondary" />}
+          </div>
+        </>
+      )
+    }
+  </Panel>
+</article>

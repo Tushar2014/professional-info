@@ -1,0 +1,249 @@
+---
+/*
+  TRACE FIELD. One instrument window per plate, sampled from src/lib/plate.ts at
+  four densities.
+
+  Every mark here is a mark the site already draws: the channel interval is
+  .rp-bar in SVG, the dashed continuation is .span-tail, the gridlines are the
+  RequestPath gridlines. Colour and stroke width come from CSS classes only,
+  never from presentation attributes, so every token stays in global.css.
+
+  Nothing in this component is gated on html.js, on a script, or on
+  IntersectionObserver, and the SVG carries no width, no height, no style and no
+  text. CSS owns the box through aspect-ratio, and every word on a plate is real
+  HTML at the site's own 11px micro step.
+*/
+import { fieldFor, channelsFor, chromeFor, FIELD } from '../lib/plate'
+
+interface Props {
+  slug: string
+  variant: 'portrait' | 'banner' | 'card' | 'monogram'
+  caption?: string
+  class?: string
+}
+
+const { slug, variant, caption, class: className = '' } = Astro.props
+
+const field = fieldFor(slug)
+const g = FIELD.variants[variant]
+const chan = channelsFor(variant, field)
+const isMonogram = variant === 'monogram'
+const chrome = isMonogram ? null : chromeFor(variant, field)
+// A captionless plate has nothing to announce, so the whole figure goes.
+const hidden = !caption
+
+/* ---------------- derived geometry, all of it from FIELD ---------------- */
+
+const baseline = (v: number): number => Math.round((v + 0.5) * g.pitch)
+const masterIndex = (v: number): number => v * g.step
+const isComb = (v: number): boolean => masterIndex(v) % FIELD.combStride === 0
+const combRow = (v: number): number => masterIndex(v) / FIELD.combStride
+const vertexX = (k: number): number => Math.round((k * FIELD.viewBox.w) / (FIELD.vertices - 1))
+const traceY = (v: number, k: number): number =>
+  baseline(v) - Math.round((chan[v].walk[k] * g.amp) / 1000)
+
+const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i)
+const lanes = range(g.count)
+const barred = lanes.filter((v) => !isComb(v))
+const traced = barred.filter((v) => chan[v].hasTrace)
+const markedV = field.mark.channel / g.step
+const isMarked = (v: number): boolean => masterIndex(v) === field.mark.channel
+
+const points = (v: number): string => {
+  const pairs: string[] = []
+  if (chan[v].stepped) {
+    for (let k = 0; k < FIELD.vertices - 1; k += 1) {
+      pairs.push(`${vertexX(k)},${traceY(v, k)}`, `${vertexX(k + 1)},${traceY(v, k)}`)
+    }
+    pairs.push(`${vertexX(FIELD.vertices - 1)},${traceY(v, FIELD.vertices - 1)}`)
+  } else {
+    for (let k = 0; k < FIELD.vertices; k += 1) pairs.push(`${vertexX(k)},${traceY(v, k)}`)
+  }
+  return pairs.join(' ')
+}
+
+/* 1. Minor grid, every 25 units except where the major grid already rules. */
+const minorGrid = [
+  ...range(39)
+    .map((i) => i + 1)
+    .filter((k) => k % 4 !== 0)
+    .map((k) => `M${k * FIELD.grid.minor} 0V${FIELD.viewBox.h}`),
+  ...range(31)
+    .map((i) => i + 1)
+    .filter((k) => k % 4 !== 0)
+    .map((k) => `M0 ${k * FIELD.grid.minor}H${FIELD.viewBox.w}`),
+].join('')
+
+/* 2. Major grid, every 100 units. */
+const majorGrid = [
+  ...range(9)
+    .map((i) => (i + 1) * FIELD.grid.major)
+    .map((x) => `M${x} 0V${FIELD.viewBox.h}`),
+  ...range(7)
+    .map((i) => (i + 1) * FIELD.grid.major)
+    .map((y) => `M0 ${y}H${FIELD.viewBox.w}`),
+].join('')
+
+/* 3. Lane rules, one dotted rule per channel. */
+const laneRules = lanes.map((v) => `M0 ${baseline(v)}H${FIELD.viewBox.w}`).join('')
+
+/* 4. The tick comb. This is the texture layer, and it is what a shimmer
+      placeholder never has. Ticks hang upward off the lane rule. */
+const combPath = lanes
+  .filter((v) => isComb(v))
+  .flatMap((v) => {
+    const y = baseline(v)
+    const slice = combRow(v) * FIELD.combTicks
+    return range(FIELD.combTicks).map((t) => {
+      const h = g.combHeights[field.comb[slice + t]]
+      return `M${t * FIELD.combPitch} ${y}V${y - h}`
+    })
+  })
+  .join('')
+
+/* 6 and 7. End caps, 2px, two per interval. The marked channel's pair is drawn
+   separately so it can carry the accent. */
+const capPath = (list: number[]): string =>
+  list
+    .flatMap((v) => {
+      const top = Math.round(baseline(v) - g.capH / 2)
+      const bottom = top + g.capH
+      return [`M${chan[v].from} ${top}V${bottom}`, `M${chan[v].to} ${top}V${bottom}`]
+    })
+    .join('')
+
+const steelCaps = capPath(barred.filter((v) => !(g.accent && isMarked(v))))
+const accentCaps = g.accent ? capPath(barred.filter((v) => isMarked(v))) : ''
+
+/* 8. Dashed continuations, the .span-tail mark. */
+const tailPath = barred
+  .filter((v) => typeof chan[v].tailTo === 'number')
+  .map((v) => `M${chan[v].to} ${baseline(v)}H${chan[v].tailTo}`)
+  .join('')
+
+/* 9. The envelope around the marked trace. */
+const envelope = g.accent
+  ? [
+      ...range(FIELD.vertices).map((k) => `${vertexX(k)},${traceY(markedV, k) - g.envelope}`),
+      ...range(FIELD.vertices)
+        .map((i) => FIELD.vertices - 1 - i)
+        .map((k) => `${vertexX(k)},${traceY(markedV, k) + g.envelope}`),
+    ].join(' ')
+  : ''
+
+/* 12. Hollow plot nodes on every fourth vertex. */
+const nodeVertices = range(FIELD.vertices).filter(
+  (k) => k % FIELD.nodeStride.mod === FIELD.nodeStride.rem,
+)
+const nodePath = traced
+  .flatMap((v) =>
+    nodeVertices.map((k) => {
+      const s = g.nodeSide
+      const x = Math.round(vertexX(k) - s / 2)
+      const y = Math.round(traceY(v, k) - s / 2)
+      return `M${x} ${y}h${s}v${s}h${-s}Z`
+    }),
+  )
+  .join('')
+
+/* 13 and 14. The extremum ring and its crosshair, the only accent marks that
+   are not on the interval itself. */
+const ringX = vertexX(field.mark.vertex)
+const ringY = g.accent ? traceY(markedV, field.mark.vertex) : 0
+const crossPath = g.accent
+  ? [
+      `M${ringX + g.ringR + 6} ${ringY}H${ringX + g.ringR + 20}`,
+      `M${ringX - g.ringR - 6} ${ringY}H${ringX - g.ringR - 20}`,
+      `M${ringX} ${ringY + g.ringR + 6}V${ringY + g.ringR + 20}`,
+      `M${ringX} ${ringY - g.ringR - 6}V${ringY - g.ringR - 20}`,
+    ].join('')
+  : ''
+
+const deep = traced.filter((v) => chan[v].deep)
+const bright = traced.filter((v) => !chan[v].deep)
+
+---
+
+<figure
+  class:list={['plate-figure', `plate-${variant}`, className]}
+  aria-hidden={hidden ? 'true' : undefined}
+>
+  {
+    chrome && (
+      <div class="pl-head" aria-hidden="true">
+        <span class="micro">{chrome.head[0]}</span>
+        <span class="micro">{chrome.head[1]}</span>
+      </div>
+    )
+  }
+
+  <svg
+    class="plate"
+    viewBox={isMonogram ? '0 0 100 100' : `0 0 ${FIELD.viewBox.w} ${FIELD.viewBox.h}`}
+    preserveAspectRatio="xMidYMid slice"
+    aria-hidden="true"
+    focusable="false"
+  >
+    {
+      isMonogram ? (
+        <Fragment>
+          <text class="pl-monogram-text" x="50" y="61" text-anchor="middle">TC</text>
+          <rect class="pl-monogram-accent" x="72" y="10" width="18" height="4" rx="2" />
+        </Fragment>
+      ) : (
+        <Fragment>
+          <path class="pl-grid-minor" d={minorGrid} />
+          <path class="pl-grid-major" d={majorGrid} />
+          <path class="pl-lanes" d={laneRules} />
+          <path class="pl-comb" d={combPath} />
+          {barred.map((v) => (
+            <rect
+              class:list={['pl-bar', g.accent && isMarked(v) && 'pl-bar-mark']}
+              x={chan[v].from}
+              y={Math.round(baseline(v) - g.barH / 2)}
+              width={chan[v].to - chan[v].from}
+              height={g.barH}
+              rx={g.radius}
+            />
+          ))}
+          <path class="pl-caps" d={steelCaps} />
+          {accentCaps && <path class="pl-caps pl-cap-mark" d={accentCaps} />}
+          {tailPath && <path class="pl-tail" d={tailPath} />}
+          {envelope && <polygon class="pl-envelope" points={envelope} />}
+          {deep.length > 0 && (
+            <g class="pl-traces-deep">
+              {deep.map((v) => (
+                <polyline class="pl-trace" points={points(v)} />
+              ))}
+            </g>
+          )}
+          {bright.length > 0 && (
+            <g class="pl-traces">
+              {bright.map((v) => (
+                <polyline class="pl-trace" points={points(v)} />
+              ))}
+            </g>
+          )}
+          {nodePath && <path class="pl-node" d={nodePath} />}
+          {g.accent && <circle class="pl-ring" cx={ringX} cy={ringY} r={g.ringR} />}
+          {crossPath && <path class="pl-cross" d={crossPath} />}
+        </Fragment>
+      )
+    }
+  </svg>
+
+  {
+    chrome && (
+      <div class="pl-foot" aria-hidden="true">
+        {chrome.foot.map((row, i) => (
+          <span class:list={['pl-pair', i === 2 && 'pl-pair-3']}>
+            <span class="micro pl-k">{row.key}</span>
+            <span class="micro pl-v">{row.value}</span>
+          </span>
+        ))}
+      </div>
+    )
+  }
+
+  {caption && <figcaption class="micro plate-caption">{caption}</figcaption>}
+</figure>

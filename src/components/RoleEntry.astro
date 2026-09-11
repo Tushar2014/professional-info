@@ -1,0 +1,63 @@
+---
+import { formatRange } from '../data/profile.schema'
+
+interface Props {
+  company: string
+  title: string
+  team?: string
+  start: string
+  end: string | null
+  summary: string
+  highlights: string[]
+  lane?: number
+  open?: boolean
+}
+
+const { company, title, team, start, end, summary, highlights, lane = 0, open = false } = Astro.props
+
+// The education entry rides the same rail with no summary and no highlights.
+// Rather than present an empty disclosure, the header renders on its own.
+const hasBody = summary.trim().length > 0 || highlights.length > 0
+---
+
+<li class="role" style={`--lane: ${lane}`} data-current={end === null ? 'true' : 'false'}>
+  <p class="date figure-sm">{formatRange(start, end)}</p>
+  <span class="role-marker" aria-hidden="true"></span>
+  {
+    hasBody ? (
+      <details open={open}>
+        <summary>
+          <h3>{company}</h3>
+          <p class="role-title">{title}</p>
+          {team && <p class="micro">{team}</p>}
+          <span class="role-toggle" aria-hidden="true"><i /><i /></span>
+        </summary>
+        <div class="role-body">
+          <div class="role-body-inner">
+            {summary.trim().length > 0 && <p class="body-copy">{summary}</p>}
+            {
+              highlights.length > 0 && (
+                <ol class="highlights">
+                  {highlights.map((highlight, i) => (
+                    <li>
+                      <span class="figure-sm hl-index" aria-hidden="true">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      {highlight}
+                    </li>
+                  ))}
+                </ol>
+              )
+            }
+          </div>
+        </div>
+      </details>
+    ) : (
+      <div class="role-static">
+        <h3>{company}</h3>
+        <p class="role-title">{title}</p>
+        {team && <p class="micro">{team}</p>}
+      </div>
+    )
+  }
+</li>

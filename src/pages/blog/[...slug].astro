@@ -1,0 +1,225 @@
+---
+import { getCollection, render } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+import Layout from '../../layouts/Layout.astro'
+import Prose from '../../components/Prose.astro'
+import Pill from '../../components/Pill.astro'
+import Button from '../../components/Button.astro'
+import PullQuote from '../../components/PullQuote.astro'
+
+export const getStaticPaths = (async () => {
+  // Drafts are withheld from a production build only, so a note in progress
+  // still has a page to preview during development.
+  const notes = await getCollection('blog', ({ data }) => !data.draft || !import.meta.env.PROD)
+  return notes.map((entry) => ({ params: { slug: entry.id }, props: { entry } }))
+}) satisfies GetStaticPaths
+
+const { entry } = Astro.props
+// `headings` is what Astro's renderer already produced from the rendered body,
+// slugs included, so the rail's jump links point at ids that exist. Nothing here
+// parses HTML.
+const { Content, headings } = await render(entry)
+const iso = entry.data.pubDate.toISOString().slice(0, 10)
+
+const body = entry.body ?? ''
+const words = body.trim().split(/\s+/).filter(Boolean).length
+const minutes = Math.max(1, Math.round(words / 220))
+
+const railMeta = [
+  { key: 'DATE', value: iso },
+  { key: 'READ', value: `${minutes} MIN` },
+  { key: 'WORDS', value: String(words) },
+]
+
+/*
+  THE PULL QUOTE, TAKEN VERBATIM FROM THE BODY.
+
+  No sentence on this page is written by the template. The band re-sets one
+  sentence the note itself contains, at the h2 step, and its caption links back to
+  the section that sentence came from, so the device is a quotation and a jump
+  link at once.
+
+  The selection is mechanical, so a future note gets a band without anybody hand
+  picking a line: strip fenced code and inline Markdown, walk the sections under
+  each h2, and keep the SHORTEST complete sentence between 60 and 130 characters
+  that carries no quotation mark of its own. Shortest, because a pull quote has to
+  survive being set at 52px. No nested quotation marks, because a quote inside a
+  quote reads as a typesetting fault.
+
+  If nothing qualifies, no band is rendered and the page is complete without it.
+  This lives in the page rather than in Prose because a full bleed band has to be
+  a direct child of the article, outside .shell.
+*/
+type Pull = { quote: string; source: string; slug: string }
+
+const h2s = headings.filter((h) => h.depth === 2)
+
+const pickPull = (): Pull | null => {
+  const sections = body.replace(/```[\s\S]*?```/g, '\n').split(/^##\s+.*$/m).slice(1)
+  let best: Pull | null = null
+  for (let i = 0; i < sections.length; i += 1) {
+    const heading = h2s[i]
+    if (!heading) continue
+    const clean = sections[i]
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/[*_`]/g, '')
+      .replace(/\s+/g, ' ')
+    for (const raw of clean.split(/(?<=\.)\s+/)) {
+      const s = raw.trim()
+      if (s.length < 60 || s.length > 130) continue
+      if (!s.endsWith('.') || /["“”]/.test(s)) continue
+      if (best && best.quote.length <= s.length) continue
+      best = { quote: s, source: heading.text, slug: heading.slug }
+    }
+  }
+  return best
+}
+
+const band = pickPull()
+---
+
+<Layout
+  title={`${entry.data.title}, Tushar Chauhan`}
+  description={entry.data.description}
+  ogType="article"
+  activeNav="writing"
+>
+  <article class="note-page">
+    <!--
+      The header spans the whole shell. It used to sit inside the 68ch measure,
+      which forced a 40 character title into four 100px lines at 1440px with the
+      rest of the screen empty beside it.
+    -->
+    <header class="note-article-head">
+      <div class="shell">
+        <p class="micro note-crumb">
+          <a href="/blog">NOTES</a> <span aria-hidden="true">/</span>
+          <time datetime={iso}>{iso}</time>
+        </p>
+
+        <h1>{entry.data.title}</h1>
+
+        <div class="grid12 note-standfirst">
+          <p class="lede note-lede">{entry.data.description}</p>
+          {
+            entry.data.tags.length > 0 && (
+              <ul class="pill-row note-tags">
+                {entry.data.tags.map((tag) => (
+                  <Pill label={tag} as="li" />
+                ))}
+              </ul>
+            )
+          }
+        </div>
+
+        <div class="note-rule" role="presentation"></div>
+      </div>
+    </header>
+
+    <div class="shell note-body">
+      <Prose headings={headings} meta={railMeta} railLabel="Note readout"><Content /></Prose>
+    </div>
+
+    {band && <PullQuote quote={band.quote} source={band.source} href={`#${band.slug}`} />}
+
+    <div class="note-foot">
+      <div class="shell">
+        <div class="note-foot-row">
+          <Button href="/blog" label="All notes" variant="secondary" />
+          <p class="micro note-foot-rss"><a href="/rss.xml">SUBSCRIBE VIA RSS</a></p>
+        </div>
+      </div>
+    </div>
+  </article>
+</Layout>
+
+<style>
+  /*
+    Named note-article-head, not note-head. global.css already owns .note-head:
+    it is the DATE / TITLE / TAGS legend row on the /blog listing, and above 900px
+    it declares grid-template-columns: 112px minmax(0,1fr) 160px. Scoped styles do
+    not protect a class name from a global rule, so the collision put this page's
+    .shell into a 112px track and stacked the h1 one character per line, 8 lines
+    tall and 32px wide, at every width from 900px up.
+  */
+  .note-article-head {
+    padding-block: clamp(3rem, 6vw, 5rem) 0;
+  }
+
+  .note-crumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1.75rem;
+  }
+
+  /* Full shell width, and text-wrap: balance rather than a character cap, so the
+     lines break where the title reads best instead of where 68ch happens to fall.
+     A cap here is what produced the four line stack. */
+  .note-page h1 {
+    margin: 0;
+    max-width: none;
+    text-wrap: balance;
+  }
+
+  /* The lede sits over the measure and the tags sit over the rail, so the two
+     columns of the body below are already established before the body starts. */
+  .note-standfirst {
+    margin-top: 2rem;
+    row-gap: 1.75rem;
+    align-items: start;
+  }
+
+  .note-lede {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+
+  .note-tags {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+
+  @media (min-width: 70rem) {
+    .note-lede {
+      grid-column: 1 / 8;
+    }
+    .note-tags {
+      grid-column: 9 / 13;
+      justify-content: flex-start;
+    }
+  }
+
+  .note-rule {
+    height: 1px;
+    margin-top: clamp(2rem, 4vw, 3rem);
+    background: var(--color-edge);
+  }
+
+  .note-body {
+    padding-block: clamp(2rem, 4vw, 3rem) clamp(3rem, 6vw, 4.5rem);
+  }
+
+  .note-foot {
+    padding-block: clamp(3rem, 6vw, 5rem);
+    border-top: 1px solid var(--color-edge);
+  }
+
+  /* The quote band already closes itself with a rule on both edges, so the foot
+     drops its own rather than draw two hairlines 1px apart. */
+  :global(.quote-band) + .note-foot {
+    border-top: 0;
+  }
+
+  .note-foot-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .note-foot-rss {
+    margin: 0;
+  }
+</style>

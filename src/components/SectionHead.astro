@@ -1,0 +1,16 @@
+---
+interface Props {
+  id: string
+  index: string
+  heading: string
+  kicker?: string
+  align?: 'left' | 'wide'
+}
+
+const { id, index, heading, kicker, align = 'left' } = Astro.props
+---
+
+<div class:list={['section-head', `section-head-${align}`]}>
+  <p class="micro section-index"><span aria-hidden="true">{index}</span> {kicker}</p>
+  <h2 id={`${id}-heading`}>{heading}</h2>
+</div>

@@ -1,0 +1,26 @@
+---
+interface Props {
+  as?: 'div' | 'article' | 'section' | 'li'
+  tone?: 'surface' | 'raised' | 'flat'
+  corner?: 'panel' | 'square'
+  pad?: 'none' | 'sm' | 'md' | 'lg'
+  class?: string
+}
+
+const {
+  as: Tag = 'div',
+  tone = 'surface',
+  corner = 'panel',
+  pad = 'md',
+  class: className = '',
+  ...rest
+} = Astro.props
+
+// Anything the caller passes beyond the declared props lands on the element
+// unchanged, which is how data-interactive reaches the hover and focus-within
+// rules in global.css.
+---
+
+<Tag class:list={['panel', `panel-${tone}`, `panel-corner-${corner}`, `panel-pad-${pad}`, className]} {...rest}>
+  <slot />
+</Tag>

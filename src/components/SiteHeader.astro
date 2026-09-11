@@ -1,0 +1,117 @@
+---
+import Plate from './Plate.astro'
+
+interface Props {
+  /**
+   * Which route family the current page belongs to. It drives a colour-only
+   * "you are in this area" hint on the matching route link, and nothing else:
+   * aria-current is derived from the pathname below and never from this prop,
+   * because a case study is not the /projects page and must not claim to be.
+   * All four values are mapped, including 'resume'.
+   */
+  activeNav?: 'work' | 'writing' | 'resume' | 'none'
+}
+
+const { activeNav = 'none' } = Astro.props
+
+// trailingSlash is 'never', so a pathname is either '/' or has no trailing
+// slash. Normalising anyway keeps the comparison true if that ever changes.
+const here = Astro.url.pathname.replace(/(.)\/$/, '$1')
+const onHome = here === '/'
+
+// On the homepage the section nav is a set of in page anchors. Everywhere else
+// the same seven anchors point back at the homepage.
+const prefix = onHome ? '' : '/'
+
+/*
+  Section anchors. Below 1400px only the three marked minimal survive, because
+  the route nav now shares the bar with them.
+
+  #writing is labelled Writing rather than Notes on purpose: the route link to
+  /blog is called NOTES, and two links in one header bar reading the same word
+  aloud is worse than a section label that differs by one word from its own
+  heading. The anchor still targets id="writing".
+*/
+const sections = [
+  { id: 'outcomes', label: 'Outcomes', minimal: false },
+  { id: 'layers', label: 'Layers', minimal: false },
+  { id: 'experience', label: 'Experience', minimal: false },
+  { id: 'stack', label: 'Skills', minimal: false },
+  { id: 'writing', label: 'Writing', minimal: true },
+  { id: 'contact', label: 'Contact', minimal: true },
+]
+
+/*
+  Route links. The header previously offered no way at all to reach /projects,
+  /blog or /resume, which made the footer the only route affordance on a site
+  whose homepage is one long scroll. Three links, two label lengths, and the
+  short form is what ships below 1400px so the bar still fits a 320px phone.
+*/
+const routes = [
+  { href: '/blog', short: 'NOTES', full: 'NOTES', area: 'writing' },
+  { href: '/resume', short: 'CV', full: 'RESUME', area: 'resume' },
+]
+---
+
+<header class="site-header">
+  <div class="shell site-header-inner">
+    <a class="site-header-brand" href="/" aria-label="Tushar Chauhan, home">
+      <Plate slug="tushar-chauhan" variant="monogram" />
+      <span class="site-header-name">Tushar Chauhan</span>
+      <span class="micro site-header-sub">BACKEND SYSTEMS</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Sections">
+      <ul>
+        {
+          sections.map((section) => (
+            <li class:list={[!section.minimal && 'nav-item-wide']}>
+              {/*
+                No aria-current here, ever. On the homepage these are in page
+                anchors and the scroll spy in motion.ts sets aria-current
+                ="location" on whichever section is on screen. Everywhere else
+                the href is /#id, which is not the current pathname, so marking
+                one of them current was the defect: /projects announced /#work
+                as the current page while the reader was on /projects.
+              */}
+              <a class="micro nav-link" href={`${prefix}#${section.id}`} data-section={section.id}>
+                {section.label}
+                <span class="nav-ind" aria-hidden="true" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <nav class="site-routes" aria-label="Pages">
+      <ul>
+        {
+          routes.map((route) => (
+            <li>
+              <a
+                class="micro nav-link"
+                href={route.href}
+                aria-current={here === route.href ? 'page' : undefined}
+                data-area={activeNav === route.area ? 'true' : undefined}
+              >
+                {route.short === route.full ? (
+                  route.short
+                ) : (
+                  <>
+                    <span class="route-short">{route.short}</span>
+                    <span class="route-full">{route.full}</span>
+                  </>
+                )}
+                <span class="nav-ind" aria-hidden="true" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+  <!-- Scroll progress. Pure CSS scroll driven animation, no JavaScript, and simply
+       not drawn where animation-timeline is unsupported. -->
+  <span class="progress-rail" aria-hidden="true"></span>
+</header>

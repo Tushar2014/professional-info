@@ -1,0 +1,902 @@
+---
+import { getCollection } from 'astro:content'
+
+import Layout from '../layouts/Layout.astro'
+import Button from '../components/Button.astro'
+import CopyButton from '../components/CopyButton.astro'
+import CountLine from '../components/CountLine.astro'
+import KeyValue from '../components/KeyValue.astro'
+import LedgerRow from '../components/LedgerRow.astro'
+import NoteRow from '../components/NoteRow.astro'
+import Panel from '../components/Panel.astro'
+import Pill from '../components/Pill.astro'
+import Plate from '../components/Plate.astro'
+import PullQuote from '../components/PullQuote.astro'
+import RoleEntry from '../components/RoleEntry.astro'
+import SectionHead from '../components/SectionHead.astro'
+import StatCell from '../components/StatCell.astro'
+import StratumRow from '../components/StratumRow.astro'
+
+import { profile } from '../data/profile'
+import { formatRange } from '../data/profile.schema'
+import { assignLanes } from '../lib/lanes'
+
+// ---------------------------------------------------------------------------
+// Data. Every fact on this page comes from profile.ts, from a content
+// collection, or from the fixed copy deck below. Nothing is derived at build
+// time from an employer internal source and no figure is invented.
+// ---------------------------------------------------------------------------
+
+const notes = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+)
+
+const currentRole = profile.experience[0]
+const lanes = assignLanes(profile.experience)
+const education = profile.education[0]
+const linkedin = profile.socials[0]
+const linkedinHandle = linkedin.href.replace(/^https?:\/\//, '')
+
+// Row A of the bone band. Four measured outcomes, all from the circulated resume.
+const OUTCOMES = [
+  {
+    label: 'API LATENCY',
+    figure: '-60%',
+    meter: 0.6,
+    context: 'Caching layers added to backend microservices.',
+  },
+  {
+    label: 'THROUGHPUT',
+    figure: '+35%',
+    meter: 0.35,
+    context: 'The same services, after that caching work.',
+  },
+  {
+    label: 'SYNC POLLING',
+    figure: '30s to 5s',
+    meter: 0.83,
+    context: 'SQL indexing and partitioning in a high load sync service.',
+  },
+  {
+    label: 'EXTRACTION ACCURACY',
+    figure: '96%',
+    meter: 0.96,
+    context: 'More resilient enrichment logic in a document pipeline.',
+  },
+]
+
+// Row B. The quieter second tier of the same motif.
+const LEDGER = [
+  {
+    label: 'TEST COVERAGE',
+    figure: '80% to 95%',
+    context: 'Structured suites and coverage thresholds.',
+  },
+  {
+    label: 'ANNOTATION TIME',
+    figure: '-30%',
+    context: 'Heuristic auto annotation pipelines.',
+  },
+  {
+    label: 'SHARED LIBRARIES',
+    figure: '10+ teams',
+    context: 'Service initialisation libraries that removed most duplicated setup code.',
+  },
+  {
+    label: 'LIBRARY SIZE',
+    figure: '-30%',
+    context: 'Legacy services refactored for modularity.',
+  },
+]
+
+// The four backend surfaces. They describe the kind of systems I work in without
+// assigning specific employer technologies to an internal architecture.
+const STRATA = [
+  {
+    index: '01',
+    title: 'BE APIs',
+    copy: 'Backend APIs with explicit contracts, validation, authentication, pagination, and predictable error handling. The interface stays boring and stable so clients can build on it safely.',
+    note: 'REST, FASTAPI, SPRING BOOT, CONTRACTS, AUTHENTICATION',
+  },
+  {
+    index: '02',
+    title: 'BFFs and service integration',
+    copy: 'Backend-for-frontend layers and service boundaries that shape data for each client without leaking storage or orchestration details. Integration code handles timeouts, retries, and partial failure explicitly.',
+    note: 'BFF, SERVICE CONTRACTS, TIMEOUTS, RETRIES, PARTIAL FAILURE',
+  },
+  {
+    index: '03',
+    title: 'Data stores and state',
+    copy: 'Choosing the right home for state: PostgreSQL for relational integrity, DynamoDB for durable document access, and Redis for carefully bounded caching. Data ownership, indexes, and idempotency come before cleverness.',
+    note: 'POSTGRESQL, DYNAMODB, REDIS, INDEXING, IDEMPOTENCY',
+  },
+  {
+    index: '04',
+    title: 'Workers and platform systems',
+    copy: 'Asynchronous workers, event-driven processing, scheduled jobs, and deployment infrastructure that keep long-running work away from request paths. Operational visibility makes the system supportable after launch.',
+    note: 'CELERY, KAFKA, KUBERNETES, OBSERVABILITY, CANARY RELEASES',
+  },
+]
+
+// The hero readout. It sits in the left column, not in the identity panel: in
+// the panel it began below a 900px fold, which put the substance of the hero out
+// of the first screen. Six rows in two columns fill the left column's tail and
+// resolve inside the fold. LINKEDIN is a row here rather than a bare link in the
+// panel foot, so it carries a value beside its key like every other readout row.
+const identityRows = [
+  { key: 'ROLE', value: currentRole.title },
+  ...(currentRole.team ? [{ key: 'TEAM', value: currentRole.team }] : []),
+  { key: 'FOCUS', value: 'Streaming, orchestration, retrieval, state' },
+  { key: 'BASED', value: profile.location },
+  { key: 'MAIL', value: profile.email, href: `mailto:${profile.email}`, copy: true },
+  { key: 'LINKEDIN', value: linkedinHandle, href: linkedin.href },
+]
+
+const credentialRows = [
+  { key: 'DEGREE', value: education.degree },
+  { key: 'INSTITUTION', value: education.institution },
+  { key: 'YEARS', value: formatRange(education.start, education.end) },
+  { key: 'BASED', value: profile.location },
+]
+
+const contactRows = [
+  { key: 'MAIL', value: profile.email, href: `mailto:${profile.email}` },
+  { key: 'LINKEDIN', value: linkedinHandle, href: linkedin.href },
+  { key: 'BASED', value: profile.location },
+  { key: 'TIME', value: 'UTC+05:30' },
+]
+---
+
+<Layout title="Tushar Chauhan, Backend Engineer" description={profile.bio} activeNav="none">
+  {/* ------------------------------------------------------------------
+      #top. The hero. No SectionHead, and the only h1 on the page.
+      ------------------------------------------------------------------ */}
+  <section id="top" class="hero" aria-labelledby="hero-heading">
+    <div class="shell grid12 hero-grid">
+      <div class="hero-left">
+        <p class="micro hero-readout">{profile.location.toUpperCase()} · UTC+05:30</p>
+
+        <h1 id="hero-heading" class="text-h1 hero-h1">
+          <span class="h1-line">I build the </span>
+          <span class="h1-line">layers <span class="accent-word">underneath</span> </span>
+          <span class="h1-line">LLM products.</span>
+        </h1>
+
+        <p class="lede hero-lede">
+          <strong>Streaming edges</strong>, <strong>orchestration</strong>, retrieval, and <strong
+            >the state they all fight over</strong
+          >. Six years on backend systems.
+        </p>
+
+        <div class="hero-cta">
+          <Button href="/resume" label="Read the resume" variant="primary" />
+        </div>
+
+        <p class="micro hero-proof">PAYPAY INDIA · SOROCO · SIX YEARS ON BACKEND SYSTEMS</p>
+
+        <div class="hero-kv">
+          <KeyValue rows={identityRows} keyWidth="5.25rem" dense />
+        </div>
+      </div>
+
+      {/* Column 8 is deliberately empty at 1120px and above. That gap is the
+          composition, so nothing is ever placed in it. */}
+      <div class="hero-panel">
+        <Panel tone="surface" corner="panel" pad="none">
+          {/* The photo slot keeps the same frame and identity block on every viewport. */}
+          <div class="identity-photo">
+            <img src="/images/headshot.png" alt="Tushar Chauhan standing by the sea" />
+          </div>
+
+          <div class="identity-name">
+            <p class="identity-name-line">Tushar Chauhan</p>
+            <p class="text-small identity-role">Backend Engineer, PayPay India</p>
+          </div>
+        </Panel>
+      </div>
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------------
+      #outcomes. The bone band, the one light region on the site. Every
+      colour inside it resolves through the scoped tokens on .band-bone.
+      ------------------------------------------------------------------ */}
+  <section id="outcomes" class="band-bone rule-top rule-bottom outcomes" aria-labelledby="outcomes-heading">
+    <div class="shell">
+      <SectionHead id="outcomes" index="01" kicker="EVIDENCE" heading="Measured outcomes" align="wide" />
+
+      <div class="stat-row reveal">
+        {
+          OUTCOMES.map((cell) => (
+            <StatCell label={cell.label} figure={cell.figure} meter={cell.meter} context={cell.context} />
+          ))
+        }
+      </div>
+
+      <p class="label outcomes-label">ALSO ON THE RECORD</p>
+
+      <div class="ledger-grid reveal">
+        {LEDGER.map((row) => <LedgerRow label={row.label} figure={row.figure} context={row.context} />)}
+      </div>
+
+      <p class="text-small outcomes-attribution">
+        Measured at Soroco, 2020 to 2026. Every figure here is from the resume I circulate. My current
+        work is described without numbers.
+      </p>
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------------
+      #layers. The backend surfaces and systems I work in.
+      ------------------------------------------------------------------ */}
+  <section id="layers" class="layers" aria-labelledby="layers-heading">
+    <div class="shell">
+      <SectionHead
+        id="layers"
+        index="02"
+        kicker="BACKEND SYSTEM DESIGN"
+        heading="How I design backend systems"
+        align="wide"
+      />
+
+      <ol class="stratum-rail reveal">
+        {
+          STRATA.map((stratum) => (
+            <StratumRow
+              index={stratum.index}
+              title={stratum.title}
+              copy={stratum.copy}
+              note={stratum.note}
+            />
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------------
+      #experience. Dates in a left gutter, one rail, no time axis: four
+      months at one employer against six years at another would render
+      the current work as a sliver.
+
+      Every entry ships open. Two closed entries beside one open one read
+      as two blank rows with a control floated far right, which is what
+      unfinished looks like. The disclosure still works, so a reader can
+      close what they have read.
+      ------------------------------------------------------------------ */}
+  <section id="experience" class="experience" aria-labelledby="experience-heading">
+    <div class="shell">
+      <SectionHead
+        id="experience"
+        index="04"
+        kicker="EXPERIENCE"
+        heading="Six years of backend systems"
+        align="wide"
+      />
+
+      <ol class="role-rail">
+        {
+          profile.experience.map((role, i) => (
+            <RoleEntry
+              company={role.company}
+              title={role.title}
+              team={role.team}
+              start={role.start}
+              end={role.end}
+              summary={role.summary}
+              highlights={role.highlights}
+              lane={lanes[i]}
+              open
+            />
+          ))
+        }
+        {/* Education rides the same rail as the final, quieter entry. */}
+        <RoleEntry
+          company={education.degree}
+          title={education.institution}
+          start={education.start}
+          end={education.end}
+          summary=""
+          highlights={[]}
+        />
+      </ol>
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------------
+      #stack. Tightest block on the page, immediately after the loosest.
+      A heading plus list structure, never a table.
+
+      The rows carry a right aligned mono count, so the six rows differ
+      from one another by more than the length of their pill run and the
+      hairline is anchored at both ends instead of running 390px past the
+      last pill. The count is the length of the group in profile.ts and
+      nothing else.
+      ------------------------------------------------------------------ */}
+  <section id="stack" class="stack" aria-labelledby="stack-heading">
+    <div class="shell">
+      <SectionHead id="stack" index="05" kicker="SKILLS" heading="Capability matrix" align="wide" />
+
+      <div class="matrix">
+        <div class="matrix-head" aria-hidden="true">
+          <p class="micro">GROUP</p>
+          <p class="micro">TOOLS</p>
+          <p class="micro matrix-head-count">COUNT</p>
+        </div>
+
+        {
+          profile.skills.map((group, i) => (
+            <div class="matrix-row reveal" style={`--i: ${i}`}>
+              <h3 class="label">{group.group}</h3>
+              <ul class="pill-row">
+                {group.items.map((item) => (
+                  <Pill label={item} as="li" />
+                ))}
+              </ul>
+              {/* The count is a visual anchor for the right end of the rule and
+                  it restates the length of the list beside it, so it is hidden
+                  from assistive technology: a bare "05" after the list adds
+                  nothing but noise, and its legend is hidden with it. */}
+              <p class="figure-sm matrix-count" aria-hidden="true">
+                {String(group.items.length).padStart(2, '0')}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------------
+      #writing. The quote band and the column header carry the structure,
+      so a single row still reads correctly.
+      ------------------------------------------------------------------ */}
+  <section id="writing" class="writing" aria-labelledby="writing-heading">
+    <div class="shell">
+      <SectionHead id="writing" index="06" kicker="NOTES" heading="Notes" align="wide" />
+    </div>
+
+    <PullQuote
+      quote="A cache is a reasonable place to accumulate it and a terrible place to define it."
+      source="STREAMING IS A STATE MACHINE, NOT A PIPE"
+      href="/blog/streaming-is-a-state-machine"
+    />
+
+    <div class="shell writing-body reveal">
+      <div class="note-head">
+        <p class="micro">DATE</p>
+        <p class="micro">TITLE</p>
+        <p class="micro">TAGS</p>
+      </div>
+
+      <ul class="note-list">
+        {
+          notes.map((note) => (
+            <NoteRow
+              slug={note.id}
+              title={note.data.title}
+              description={note.data.description}
+              pubDate={note.data.pubDate}
+              tags={note.data.tags}
+            />
+          ))
+        }
+      </ul>
+
+      <div class="writing-foot">
+        <Button href="/blog" label="All notes" variant="secondary" />
+        <p class="micro writing-rss"><a href="/rss.xml">SUBSCRIBE VIA RSS</a></p>
+      </div>
+
+      <CountLine count={notes.length} singular="NOTE" plural="NOTES" />
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------------
+      #credentials. Two square flat panels, separated by rules, then the
+      instrument band. The last third of this page had no imagery, no
+      accent and nothing at scale, so it decayed into ruled grey rows.
+      The band is the site's own artwork at poster width: it carries the
+      only accent marks in this section and the only figure of any size
+      between #outcomes and the footer.
+      ------------------------------------------------------------------ */}
+  <section id="credentials" class="credentials" aria-labelledby="credentials-heading">
+    <div class="shell">
+      <SectionHead
+        id="credentials"
+        index="07"
+        kicker="CREDENTIALS"
+        heading="Credentials"
+        align="wide"
+      />
+
+      <div class="cred-grid reveal">
+        <div class="cred-cell">
+          <Panel tone="flat" corner="square" pad="none">
+            <KeyValue rows={credentialRows} keyWidth="7rem" />
+          </Panel>
+        </div>
+
+        <div class="cred-cell">
+          <Panel tone="flat" corner="square" pad="none">
+            <p class="label cred-kicker">RESUME</p>
+            <p class="text-small cred-copy">The same figures as this page, on one page you can print.</p>
+            <Button href="/resume" label="Read the resume" variant="secondary" />
+          </Panel>
+        </div>
+      </div>
+
+      {/* Decorative, and captionless on purpose: a plate figure with no
+          caption is aria-hidden in full, so nothing is announced twice. The
+          head strip and the foot readout still declare on screen that the
+          drawing is synthetic and carries no measured data. */}
+      <div class="cred-band reveal">
+        <Plate slug="capability-readout" variant="banner" />
+      </div>
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------------
+      #contact. The closer. The 5 percent radial wash is the single
+      named exception to the no gradient rule.
+      ------------------------------------------------------------------ */}
+  <section id="contact" class="contact" aria-labelledby="contact-heading">
+    <div class="shell grid12 contact-grid">
+      <div class="contact-main">
+        <SectionHead
+          id="contact"
+          index="08"
+          kicker="CONTACT"
+          heading="Let us talk about the layer under your product."
+          align="wide"
+        />
+
+        <p class="lede contact-line">
+          Streaming edges, orchestration tiers, retrieval, conversation state. If you are building any of
+          those, I am easy to reach.
+        </p>
+
+        <div class="contact-mail">
+          <a class="mailto-xl" href={`mailto:${profile.email}`}>{profile.email}</a>
+          <CopyButton value={profile.email} label="Copy email address to clipboard" />
+        </div>
+      </div>
+
+      <div class="contact-readout">
+        <KeyValue rows={contactRows} keyWidth="6rem" />
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* ==================================================================
+     #top
+     ================================================================== */
+  .hero {
+    padding-block: clamp(3.5rem, 7vh, 6rem) clamp(4.5rem, 9vh, 8rem);
+  }
+
+  .hero-grid {
+    row-gap: 3rem;
+  }
+
+  .hero-left {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .hero-panel {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  /* The status line is itself a rule: the hairline runs to the right edge of
+     the left column. It is a static string. No live clock, no pulsing dot, and
+     no availability statement anywhere on this site. */
+  .hero-readout {
+    display: flex;
+    align-items: center;
+    min-height: 28px;
+    margin: 0 0 2.5rem;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+
+  /* The h1 is three hard set lines at 640px and above, where .h1-line becomes a
+     block. The longest of them, "layers underneath", measures 8.53px of ink per
+     1px of font size, and the column it sits in is 0.567 of the shell: 707px at
+     1440px, but only 590px at 1120px and 466px at 900px, because the identity
+     panel takes four of the twelve columns from 900px up. At the token ceiling
+     of 6.25rem, and at the 5rem this page tried next, that line wrapped inside
+     itself and left a hole beside the word "layers": four visual lines at 1120,
+     1000 and 900. This clamp is sized off the narrowest column instead of the
+     widest, so the middle line is one line at every width:
+       900px  -> 52.0px font, 443px of ink in a 466px track
+       1120px -> 62.6px font, 534px of ink in a 590px track
+       1440px -> 72.0px font, 614px of ink in a 707px track
+     The ceiling is what shrank, 5rem to 4.5rem. Below 640px .h1-line is inline
+     and the copy simply flows, so the minimum is set for legibility, not fit. */
+  .hero-h1 {
+    margin: 0 0 1.5rem;
+    font-size: clamp(2.5rem, 0.55rem + 4.8vw, 4.5rem);
+  }
+
+  .hero-lede {
+    margin: 0 0 2rem;
+  }
+
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0 0 1.75rem;
+  }
+
+  .hero-proof {
+    margin: 0;
+  }
+
+  /* The hero readout, in the left column rather than in the panel. Two columns
+     of three rows: it fills the tail of the left column, which used to run 430px
+     past its last line, and it puts ROLE, TEAM, FOCUS, BASED, MAIL and LINKEDIN
+     inside a 900px fold instead of below it. */
+  .hero-kv {
+    margin-top: 2rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--color-edge);
+  }
+
+  @media (min-width: 40rem) {
+    .hero-kv :global(.kv) {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2.5rem;
+    }
+    /* Every row keeps its own hairline, including the two that end a column. */
+    .hero-kv :global(.kv-row:last-child) {
+      border-bottom: 1px solid var(--color-hairline);
+    }
+    /* The two address rows take the full width. In a half width track the mono
+       address filled the value column to the pixel and pushed its copy control
+       onto a line of its own, which read as a stray icon; the LinkedIn handle
+       broke after the slash for the same reason. Full width, both sit on one
+       line with the control beside the address, and the block is no taller. */
+    .hero-kv :global(.kv-row:nth-last-child(-n + 2)) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* The photo slot. Clipped to the panel's top corners only. */
+  .identity-photo {
+    border-start-start-radius: var(--radius-panel);
+    border-start-end-radius: var(--radius-panel);
+    overflow: hidden;
+  }
+
+  .identity-photo img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    object-position: center 28%;
+  }
+
+  .identity-photo :global(.plate-caption) {
+    padding: 0 1.25rem 1.125rem;
+  }
+
+  .identity-name {
+    padding: 1.125rem 1.25rem 1.25rem;
+    border-top: 1px solid var(--color-hairline);
+  }
+
+  .identity-name-line {
+    margin: 0;
+    font-size: var(--text-h4);
+    font-weight: var(--text-h4--font-weight);
+    line-height: var(--text-h4--line-height);
+    letter-spacing: var(--text-h4--letter-spacing);
+  }
+
+  .identity-role {
+    margin: 0.25rem 0 0;
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 56.25rem) {
+    .hero-left {
+      grid-column: 1 / 8;
+    }
+    .hero-panel {
+      grid-column: 8 / -1;
+    }
+  }
+
+  @media (min-width: 70rem) {
+    .hero {
+      min-height: 92svh;
+    }
+    .hero-left {
+      grid-column: 1 / 8;
+    }
+    /* Column 8 stays empty. The panel starts at column 9. Its offset is 4.5rem
+       at every width from 1120px up rather than growing to 6rem at 1400px: the
+       extra 24px pushed the panel's own last block past a 900px fold. */
+    .hero-panel {
+      grid-column: 9 / -1;
+      margin-block-start: 4.5rem;
+    }
+  }
+
+  /* ==================================================================
+     #outcomes
+     ================================================================== */
+  .outcomes {
+    padding-block: clamp(4.5rem, 8vw, 7rem);
+  }
+
+  .outcomes-label {
+    margin: 3rem 0 0.5rem;
+  }
+
+  .outcomes-attribution {
+    max-width: 60ch;
+    margin: 2rem 0 0;
+    color: var(--color-muted);
+  }
+
+  /* ==================================================================
+     #layers
+     ================================================================== */
+  .layers {
+    padding-block: clamp(5.5rem, 10vw, 9rem);
+  }
+
+  /* The rail. --rail-inset is read by StratumRow to hang its node on the line. */
+  .stratum-rail {
+    --rail-inset: clamp(1.25rem, 3vw, 2.5rem);
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 var(--rail-inset);
+    border-top: 1px solid var(--color-edge);
+  }
+
+  .stratum-rail::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--color-edge);
+  }
+
+  /* ==================================================================
+     #work
+     ================================================================== */
+  .work {
+    padding-block: clamp(4rem, 7vw, 6.5rem);
+  }
+
+  .work-rest {
+    margin-top: 2rem;
+  }
+
+  .work-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  /* ==================================================================
+     #experience
+     ================================================================== */
+  .experience {
+    padding-block: clamp(4.5rem, 8vw, 7rem);
+  }
+
+  /* ==================================================================
+     #stack
+     ================================================================== */
+  .stack {
+    padding-block: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  /* The legend and the count share the matrix grid, so the count column lands
+     under its own key. Below 900px a matrix row is a stacked group name over its
+     pills, so the count rides the group name line and the three column legend,
+     which would carry no meaning there, is dropped. */
+  .matrix-head {
+    display: none;
+  }
+
+  .matrix-row {
+    grid-template-columns: minmax(0, 1fr) 3rem;
+  }
+
+  .matrix-row h3 {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .matrix-row .pill-row {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .matrix-count {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    text-align: right;
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 56.25rem) {
+    .matrix-head,
+    .matrix-row {
+      grid-template-columns: 168px minmax(0, 1fr) 4rem;
+    }
+    .matrix-head {
+      display: grid;
+      column-gap: 1.5rem;
+      align-items: baseline;
+      padding-bottom: 0.5rem;
+    }
+    .matrix-head p {
+      margin: 0;
+    }
+    .matrix-row .pill-row {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .matrix-count {
+      grid-column: 3;
+    }
+    .matrix-head-count {
+      text-align: right;
+    }
+  }
+
+  /* ==================================================================
+     #writing
+     ================================================================== */
+  .writing {
+    padding-block: clamp(4rem, 7vw, 6.5rem);
+  }
+
+  .writing-body {
+    margin-top: 3.5rem;
+  }
+
+  .writing-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+
+  .writing-rss {
+    margin: 0;
+  }
+
+  /* Below 900px a NoteRow is one column with its own date above the title and
+     its own tags below, so a three column header carries no meaning there. */
+  @media (max-width: 56.2475rem) {
+    .note-head {
+      display: none;
+    }
+  }
+
+  /* ==================================================================
+     #credentials
+     ================================================================== */
+  .credentials {
+    padding-block: clamp(3.5rem, 6vw, 5.5rem);
+  }
+
+  .cred-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+
+  .cred-cell {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-edge);
+  }
+
+  .cred-kicker {
+    margin: 0 0 0.75rem;
+  }
+
+  .cred-copy {
+    max-width: 34ch;
+    margin: 0 0 1.5rem;
+    color: var(--color-muted);
+  }
+
+  .cred-band {
+    margin-top: 3rem;
+  }
+
+  @media (min-width: 56.25rem) {
+    .cred-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2.5rem;
+    }
+    .cred-band {
+      margin-top: 4rem;
+    }
+  }
+
+  /* ==================================================================
+     #contact
+     ================================================================== */
+  .contact {
+    padding-block: clamp(7rem, 12vw, 10rem);
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-edge);
+    background-image: radial-gradient(
+      60% 80% at 20% 0%,
+      color-mix(in oklab, var(--color-accent) 5%, transparent),
+      transparent
+    );
+  }
+
+  .contact-grid {
+    row-gap: 3rem;
+  }
+
+  .contact-main {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .contact-readout {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .contact-line {
+    margin: 0 0 2rem;
+  }
+
+  .contact-mail {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* The one accent event in the closer, and the only accent between the bone
+     band and the footer. It is the operative element of the section: the address
+     is the action, at the largest mono step on the site. 5.31:1 on the surface
+     this section paints. */
+  .contact-mail .mailto-xl {
+    color: var(--color-accent);
+  }
+
+  @media (min-width: 56.25rem) {
+    .contact-main {
+      grid-column: 1 / 8;
+    }
+    .contact-readout {
+      grid-column: 8 / -1;
+    }
+  }
+
+  @media (min-width: 70rem) {
+    .contact-main {
+      grid-column: 1 / 9;
+    }
+    .contact-readout {
+      grid-column: 9 / -1;
+    }
+  }
+</style>

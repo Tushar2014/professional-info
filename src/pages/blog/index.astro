@@ -1,0 +1,144 @@
+---
+import { getCollection } from 'astro:content'
+import Layout from '../../layouts/Layout.astro'
+import NoteRow from '../../components/NoteRow.astro'
+import CountLine from '../../components/CountLine.astro'
+import PullQuote from '../../components/PullQuote.astro'
+import Button from '../../components/Button.astro'
+
+// Drafts are withheld from a production build only, so a note in progress is
+// still readable during development.
+const notes = (await getCollection('blog', ({ data }) => !data.draft || !import.meta.env.PROD)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+)
+
+const lede = 'Notes on backend systems, streaming, orchestration and state.'
+
+// The newest note supplies the band, and it is the second unit on a page that
+// otherwise has only as many units as there are entries. Nothing here is authored
+// for this page: the line is the opening sentence of the note it links to,
+// verbatim, so the band adds a device without adding a claim. It is deliberately
+// not the sentence the homepage band carries, so the two never repeat.
+const newest = notes[0]
+const BAND = {
+  quote: 'Treating a streamed response as a pipe works until the pipe breaks.',
+  accent: 'until the pipe breaks',
+}
+---
+
+<Layout title="Notes, Tushar Chauhan" description={lede} activeNav="writing">
+  <section class="notes-head">
+    <div class="shell">
+      <p class="micro notes-kicker">NOTES</p>
+      <h1>Notes</h1>
+      <p class="lede notes-lede">{lede}</p>
+    </div>
+  </section>
+
+  {
+    newest && (
+      <PullQuote
+        quote={BAND.quote}
+        accent={BAND.accent}
+        source={newest.data.title.toUpperCase()}
+        href={`/blog/${newest.id}`}
+      />
+    )
+  }
+
+  <section class="notes-list-section" aria-labelledby="notes-list-heading">
+    <div class="shell">
+      <!--
+        A real h2 is required between the page h1 and the h3 inside every NoteRow,
+        otherwise this listing skips a heading level. It is visually hidden because
+        the column header row below already carries the structure on screen.
+      -->
+      <h2 class="visually-hidden" id="notes-list-heading">All notes</h2>
+
+      <!-- The same three micro keys as the identical legend in the homepage
+           #writing section. They are a legend for the grid, so they must never be
+           louder than the row they describe. -->
+      <div class="note-head">
+        <p class="micro">DATE</p>
+        <p class="micro">TITLE</p>
+        <p class="micro">TAGS</p>
+      </div>
+
+      <ol class="note-list">
+        {
+          notes.map((note) => (
+            <NoteRow
+              slug={note.id}
+              title={note.data.title}
+              description={note.data.description}
+              pubDate={note.data.pubDate}
+              tags={note.data.tags}
+            />
+          ))
+        }
+      </ol>
+
+      <CountLine count={notes.length} singular="note" plural="notes" />
+
+      <!--
+        A cross link, not a tag index. A derived tag index was built and removed:
+        with one note its pills were the same two pills the row above already
+        shows, which is the kind of duplicated furniture this wave exists to
+        delete. The band above is the unit that does not depend on entry count.
+      -->
+      <div class="notes-foot">
+        <Button href="/projects" label="Case studies" variant="secondary" />
+        <p class="micro notes-rss"><a href="/rss.xml">SUBSCRIBE VIA RSS</a></p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .notes-head {
+    padding-block: clamp(3rem, 6vw, 5rem) clamp(2.5rem, 5vw, 4rem);
+  }
+  .notes-kicker {
+    margin: 0 0 1.25rem;
+  }
+  .notes-head h1 {
+    margin: 0;
+  }
+  .notes-lede {
+    margin: 1.5rem 0 0;
+  }
+
+  .notes-list-section {
+    padding-block: clamp(2.5rem, 5vw, 4rem) clamp(4.5rem, 9vw, 7.5rem);
+  }
+
+  /* The column header row is a legend for a three column grid, so it is only
+     drawn where that grid exists. Below 900px the rows stack and the legend
+     would read as three orphaned words. */
+  .note-head {
+    display: none;
+  }
+  @media (min-width: 56.25rem) {
+    .note-head {
+      display: grid;
+    }
+  }
+  /* Where the legend is not drawn, the list still needs a top rule: without it
+     the first row has no edge above it and the list starts in mid air. */
+  @media (max-width: 56.2rem) {
+    .note-list {
+      border-top: 1px solid var(--color-edge);
+    }
+  }
+
+  .notes-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .notes-rss {
+    margin: 0;
+  }
+</style>

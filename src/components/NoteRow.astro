@@ -1,0 +1,29 @@
+---
+import Pill from './Pill.astro'
+
+interface Props {
+  slug: string
+  title: string
+  description: string
+  pubDate: Date
+  tags: string[]
+}
+
+const { slug, title, description, pubDate, tags } = Astro.props
+const iso = pubDate.toISOString().slice(0, 10)
+---
+
+<li class="note-row">
+  <p class="figure-sm note-date"><time datetime={iso}>{iso}</time></p>
+  <div>
+    <h3>
+      <a href={`/blog/${slug}`}>{title}</a>
+    </h3>
+    <!-- The description is always in the DOM and never display: none, so a screen
+         reader reads it whether or not a pointer is hovering the row. -->
+    <p class="text-small note-desc">{description}</p>
+  </div>
+  <ul class="pill-row">
+    {tags.map((tag) => <Pill label={tag} as="li" />)}
+  </ul>
+</li>

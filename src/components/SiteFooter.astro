@@ -1,0 +1,93 @@
+---
+import Plate from './Plate.astro'
+import { wrapPoints } from './KeyValue.astro'
+import { profile } from '../data/profile'
+
+const sections = [
+  { id: 'outcomes', label: 'Outcomes' },
+  { id: 'layers', label: 'Layers' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'stack', label: 'Skills' },
+  { id: 'writing', label: 'Notes' },
+  { id: 'contact', label: 'Contact' },
+]
+
+const pages = [
+  { href: '/blog', label: 'Notes' },
+  { href: '/resume', label: 'Resume' },
+  { href: '/rss.xml', label: 'RSS' },
+]
+
+const prefix = Astro.url.pathname === '/' ? '' : '/'
+const linkedin = profile.socials[0]
+
+// The profile URL without its scheme, derived rather than retyped so it cannot
+// drift from src/data/profile.ts. It replaces the bare underlined word LINKEDIN,
+// which read as a readout row whose value had failed to load.
+const linkedinValue = linkedin.href.replace(/^https?:\/\//, '').replace(/\/$/, '')
+
+/*
+  The same wrap rule the hero identity rows use, imported rather than restated so
+  the two readouts cannot drift.
+
+  From 900px up the contact track is sized by its content, so neither value has to
+  break at all. The one width left where it does is 320px: the single column is
+  280px and the profile URL needs 287px, and .footer-list a sets
+  overflow-wrap: anywhere, so something has to give. Left alone it gave up the
+  last character, one "0" alone on a second line. With a wrap opportunity after
+  the /in/ the break lands at 139px then 148px instead, which reads as a wrapped
+  URL. Nothing else moves: measured at 360, 390, 414, 768, 900, 960, 1000, 1024,
+  1080, 1120, 1160, 1200, 1240, 1280, 1440 and 1600 both values still set on one
+  line.
+*/
+const mailParts = wrapPoints(profile.email)
+const linkedinParts = wrapPoints(linkedinValue)
+---
+
+<footer class="site-footer">
+  <div class="shell">
+    <div class="footer-grid">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.625rem;">
+          <Plate slug="tushar-chauhan" variant="monogram" />
+          <span class="site-header-name">{profile.name}</span>
+        </div>
+        <p class="micro" style="margin: 0.75rem 0 0;">BACKEND ENGINEER · {profile.location.toUpperCase()}</p>
+      </div>
+
+      <div>
+        <h2 class="label">SECTIONS</h2>
+        <ul class="footer-list">
+          {sections.map((section) => <li><a href={`${prefix}#${section.id}`}>{section.label}</a></li>)}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="label">PAGES</h2>
+        <ul class="footer-list">
+          {pages.map((page) => <li><a href={page.href}>{page.label}</a></li>)}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="label">CONTACT</h2>
+        {/* Both rows are the same mono key over value shape the hero identity
+            panel uses, so neither is a key with nothing beside it. */}
+        <ul class="footer-list">
+          <li class="footer-pair">
+            <span class="micro">MAIL</span>
+            <a href={`mailto:${profile.email}`}>{mailParts.map((part, i) => <Fragment>{i > 0 && <wbr />}{part}</Fragment>)}</a>
+          </li>
+          <li class="footer-pair">
+            <span class="micro">LINKEDIN</span>
+            <a href={linkedin.href}>{linkedinParts.map((part, i) => <Fragment>{i > 0 && <wbr />}{part}</Fragment>)}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-build">
+      <p class="micro" style="margin: 0;">© 2026 TUSHAR CHAUHAN</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,67 @@
+---
+import { Font } from 'astro:assets'
+import '../styles/global.css'
+/*
+  print.css is imported HERE, not in a page. It used to be imported by
+  src/pages/resume.astro alone, which put the ink flip in that one page's bundle
+  and left every other route printing rgb(232, 237, 245) body text on white paper
+  once the browser stripped the background. The flip is global; the CV's own paper
+  rhythm is scoped to .cv inside that file.
+*/
+import '../styles/print.css'
+
+interface Props {
+  title: string
+  description: string
+  ogType?: 'website' | 'article'
+}
+
+const { title, description, ogType = 'website' } = Astro.props
+const canonical = new URL(Astro.url.pathname, Astro.site)
+
+/*
+  One share card for the whole site. twitter:card was summary_large_image with
+  og:image and twitter:image both null, so every share rendered as a bare text
+  card and some clients rendered a broken one. /og.png is a real 1200x630 asset
+  drawn from the same TRACE FIELD generator as every plate on the site, so the
+  card and the page are one piece of artwork. See public/og.png.
+*/
+const ogImage = new URL('/og.png', Astro.site)
+const OG_IMAGE_ALT =
+  'Tushar Chauhan, Backend Engineer. A synthetic instrument trace field in steel blue on near black.'
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="theme-color" content="#0a0c10" />
+
+<meta property="og:site_name" content="Tushar Chauhan" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={OG_IMAGE_ALT} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={OG_IMAGE_ALT} />
+
+<link rel="alternate" type="application/rss+xml" title="Notes by Tushar Chauhan" href="/rss.xml" />
+
+<Font cssVariable="--font-chivo" preload />
+<Font cssVariable="--font-azeret" />
+
+<!--
+  .js says only that scripting is running. It gates controls that would be dead
+  without it, such as the tag filter. It NEVER gates a hidden pre-state: this
+  class is added before first paint whether or not the motion module ever loads,
+  so anything hidden by it would have nothing left alive to reveal it. Motion
+  pre-states are keyed on .is-armed, which motion.ts applies itself.
+-->
+<script is:inline>document.documentElement.classList.add('js')</script>
