@@ -1,33 +1,75 @@
-# resume-site
+# professional-info
 
-Personal site: resume and writing. Astro 7, static output.
+Personal portfolio site built with Astro 7, featuring a risograph-inspired visual system.
 
-- `npm run dev` — local dev server
-- `npm run build` — type check, then static build to `dist/`
-- `npm test` — unit tests
-- `npm run test:e2e` — Playwright specs
+## Tech Stack
 
-## Writing rule
+- [Astro 7](https://astro.build/) — static site generator
+- [Tailwind CSS 4](https://tailwindcss.com/) — utility-first CSS
+- [TypeScript](https://www.typescriptlang.org/) — type safety
+- [Playwright](https://playwright.dev/) — end-to-end testing
 
-Everything published here describes work that is internal and unreleased, so
-every word has to be safe to publish. There is no automated gate. The rule is
-simpler than a gate and does not need maintaining:
+## Getting Started
 
-**Never write a company-specific word.** No internal service, repository, or
-tool names. No ticket identifiers. No cluster, region, or environment names.
-No table, index, or field names. No prompt text. No internal metrics or SLO
-targets. No headcounts or coworker names.
+### Prerequisites
 
-Describe the shape of the problem and the reasoning instead. "A durable
-document store became the system of record" carries the engineering; the
-internal name carries only risk. Employer names and job titles are fine, since
-they are already public.
+- Node.js 22+
+- npm
 
-`docs/superpowers/specs/` contains a worked before-and-after example that
-quotes real internal names to show what redaction removes. That directory is
-git-ignored and must stay unpublished.
+### Installation
 
-## Design documents
+```bash
+npm install
+```
 
-- Spec: `docs/superpowers/specs/2026-09-04-resume-site-design.md`
-- Plan: `docs/superpowers/plans/2026-09-04-resume-site.md`
+### Development
+
+```bash
+npm run dev
+```
+
+### Build
+
+```bash
+npm run build
+```
+
+Output is written to `dist/`.
+
+### Preview
+
+```bash
+npm run preview
+```
+
+## Testing
+
+### Unit Tests
+
+```bash
+npm test
+```
+
+### E2E Tests
+
+```bash
+npm run test:e2e
+```
+
+## Project Structure
+
+```
+src/
+├── components/     # Astro components
+├── content/        # Markdown content (blog, projects)
+├── data/           # TypeScript data modules
+├── layouts/        # Page layouts
+├── lib/            # Utility functions
+├── pages/          # Route pages
+├── scripts/        # Build scripts
+└── styles/         # Global styles
+```
+
+## Deployment
+
+Deploys to [GitHub Pages](https://pages.github.com/). See `.github/workflows/deploy.yml` for the CI pipeline.
