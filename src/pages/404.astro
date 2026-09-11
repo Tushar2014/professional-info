@@ -2,12 +2,13 @@
 import Layout from '../layouts/Layout.astro'
 import KeyValue, { type KeyValueRow } from '../components/KeyValue.astro'
 import Plate from '../components/Plate.astro'
+import { page } from '../lib/url'
 
 const routes: KeyValueRow[] = [
-  { key: 'HOME', value: '/', href: '/' },
-  { key: 'CASE STUDIES', value: '/projects', href: '/projects' },
-  { key: 'NOTES', value: '/blog', href: '/blog' },
-  { key: 'RESUME', value: '/resume', href: '/resume' },
+  { key: 'HOME', value: '/', href: page('/') },
+  { key: 'CASE STUDIES', value: '/projects', href: page('/projects') },
+  { key: 'NOTES', value: '/blog', href: page('/blog') },
+  { key: 'RESUME', value: '/resume', href: page('/resume') },
 ]
 ---
 

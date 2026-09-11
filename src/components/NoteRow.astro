@@ -1,5 +1,6 @@
 ---
 import Pill from './Pill.astro'
+import { page } from '../lib/url'
 
 interface Props {
   slug: string
@@ -17,7 +18,7 @@ const iso = pubDate.toISOString().slice(0, 10)
   <p class="figure-sm note-date"><time datetime={iso}>{iso}</time></p>
   <div>
     <h3>
-      <a href={`/blog/${slug}`}>{title}</a>
+      <a href={page(`/blog/${slug}`)}>{title}</a>
     </h3>
     <!-- The description is always in the DOM and never display: none, so a screen
          reader reads it whether or not a pointer is hovering the row. -->

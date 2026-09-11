@@ -7,6 +7,7 @@ import Pill from '../../components/Pill.astro'
 import Button from '../../components/Button.astro'
 import Prose from '../../components/Prose.astro'
 import PullQuote from '../../components/PullQuote.astro'
+import { page } from '../../lib/url'
 import RequestPath from '../../components/RequestPath.astro'
 import { REQUEST_PATH_SLUGS } from '../../lib/spans'
 
@@ -97,7 +98,7 @@ const band = pickPull()
     <section class="case-head">
       <div class="shell">
         <p class="micro case-crumb">
-          <a href="/projects">CASE STUDIES</a> <span aria-hidden="true">/</span> {timeframe}
+          <a href={page('/projects')}>CASE STUDIES</a> <span aria-hidden="true">/</span> {timeframe}
         </p>
         <!--
           The title spans the whole shell. It used to be capped at 24ch inside ten
@@ -172,8 +173,8 @@ const band = pickPull()
     <div class="case-foot">
       <div class="shell">
         <div class="case-foot-row">
-          <Button href="/projects" label="All case studies" variant="secondary" />
-          <a class="micro case-foot-link" href="/blog">Notes</a>
+          <Button href={page('/projects')} label="All case studies" variant="secondary" />
+          <a class="micro case-foot-link" href={page('/blog')}>Notes</a>
         </div>
       </div>
     </div>

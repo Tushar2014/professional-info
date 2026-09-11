@@ -20,6 +20,7 @@ import StratumRow from '../components/StratumRow.astro'
 import { profile } from '../data/profile'
 import { formatRange } from '../data/profile.schema'
 import { assignLanes } from '../lib/lanes'
+import { page } from '../lib/url'
 
 // ---------------------------------------------------------------------------
 // Data. Every fact on this page comes from profile.ts, from a content
@@ -169,7 +170,7 @@ const contactRows = [
         </p>
 
         <div class="hero-cta">
-          <Button href="/resume" label="Read the resume" variant="primary" />
+          <Button href={page('/resume')} label="Read the resume" variant="primary" />
         </div>
 
         <p class="micro hero-proof">PAYPAY INDIA · SOROCO · SIX YEARS ON BACKEND SYSTEMS</p>
@@ -185,7 +186,7 @@ const contactRows = [
         <Panel tone="surface" corner="panel" pad="none">
           {/* The photo slot keeps the same frame and identity block on every viewport. */}
           <div class="identity-photo">
-            <img src="/images/headshot.png" alt="Tushar Chauhan standing by the sea" />
+            <img src={page('/images/headshot.png')} alt="Tushar Chauhan standing by the sea" />
           </div>
 
           <div class="identity-name">
@@ -359,7 +360,7 @@ const contactRows = [
     <PullQuote
       quote="A cache is a reasonable place to accumulate it and a terrible place to define it."
       source="STREAMING IS A STATE MACHINE, NOT A PIPE"
-      href="/blog/streaming-is-a-state-machine"
+      href={page('/blog/streaming-is-a-state-machine')}
     />
 
     <div class="shell writing-body reveal">
@@ -384,8 +385,8 @@ const contactRows = [
       </ul>
 
       <div class="writing-foot">
-        <Button href="/blog" label="All notes" variant="secondary" />
-        <p class="micro writing-rss"><a href="/rss.xml">SUBSCRIBE VIA RSS</a></p>
+        <Button href={page('/blog')} label="All notes" variant="secondary" />
+        <p class="micro writing-rss"><a href={page('/rss.xml')}>SUBSCRIBE VIA RSS</a></p>
       </div>
 
       <CountLine count={notes.length} singular="NOTE" plural="NOTES" />
@@ -421,7 +422,7 @@ const contactRows = [
           <Panel tone="flat" corner="square" pad="none">
             <p class="label cred-kicker">RESUME</p>
             <p class="text-small cred-copy">The same figures as this page, on one page you can print.</p>
-            <Button href="/resume" label="Read the resume" variant="secondary" />
+            <Button href={page('/resume')} label="Read the resume" variant="secondary" />
           </Panel>
         </div>
       </div>

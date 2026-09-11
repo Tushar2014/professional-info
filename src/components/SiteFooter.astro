@@ -2,6 +2,7 @@
 import Plate from './Plate.astro'
 import { wrapPoints } from './KeyValue.astro'
 import { profile } from '../data/profile'
+import { page } from '../lib/url'
 
 const sections = [
   { id: 'outcomes', label: 'Outcomes' },
@@ -13,12 +14,12 @@ const sections = [
 ]
 
 const pages = [
-  { href: '/blog', label: 'Notes' },
-  { href: '/resume', label: 'Resume' },
-  { href: '/rss.xml', label: 'RSS' },
+  { href: page('/blog'), label: 'Notes' },
+  { href: page('/resume'), label: 'Resume' },
+  { href: page('/rss.xml'), label: 'RSS' },
 ]
 
-const prefix = Astro.url.pathname === '/' ? '' : '/'
+const prefix = Astro.url.pathname === '/' ? '' : page('/')
 const linkedin = profile.socials[0]
 
 // The profile URL without its scheme, derived rather than retyped so it cannot

@@ -1,5 +1,6 @@
 ---
 import { Font } from 'astro:assets'
+import { page } from '../lib/url'
 import '../styles/global.css'
 /*
   print.css is imported HERE, not in a page. It used to be imported by
@@ -26,7 +27,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
   drawn from the same TRACE FIELD generator as every plate on the site, so the
   card and the page are one piece of artwork. See public/og.png.
 */
-const ogImage = new URL('/og.png', Astro.site)
+const ogImage = new URL(page('/og.png'), Astro.site)
 const OG_IMAGE_ALT =
   'Tushar Chauhan, Backend Engineer. A synthetic instrument trace field in steel blue on near black.'
 ---
@@ -36,7 +37,7 @@ const OG_IMAGE_ALT =
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" type="image/svg+xml" href={page('/favicon.svg')} />
 <meta name="theme-color" content="#0a0c10" />
 
 <meta property="og:site_name" content="Tushar Chauhan" />
@@ -52,7 +53,7 @@ const OG_IMAGE_ALT =
 <meta name="twitter:image" content={ogImage} />
 <meta name="twitter:image:alt" content={OG_IMAGE_ALT} />
 
-<link rel="alternate" type="application/rss+xml" title="Notes by Tushar Chauhan" href="/rss.xml" />
+<link rel="alternate" type="application/rss+xml" title="Notes by Tushar Chauhan" href={page('/rss.xml')} />
 
 <Font cssVariable="--font-chivo" preload />
 <Font cssVariable="--font-azeret" />

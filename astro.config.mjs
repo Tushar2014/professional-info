@@ -3,7 +3,8 @@ import tailwindcss from '@tailwindcss/vite'
 import sitemap from '@astrojs/sitemap'
 
 export default defineConfig({
-  site: 'https://resume-site.pages.dev',
+  site: 'https://tushar2014.github.io',
+  base: '/professional-info',
   output: 'static',
   trailingSlash: 'never',
   integrations: [sitemap()],

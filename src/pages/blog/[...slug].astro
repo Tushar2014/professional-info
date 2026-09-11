@@ -6,6 +6,7 @@ import Prose from '../../components/Prose.astro'
 import Pill from '../../components/Pill.astro'
 import Button from '../../components/Button.astro'
 import PullQuote from '../../components/PullQuote.astro'
+import { page } from '../../lib/url'
 
 export const getStaticPaths = (async () => {
   // Drafts are withheld from a production build only, so a note in progress
@@ -93,7 +94,7 @@ const band = pickPull()
     <header class="note-article-head">
       <div class="shell">
         <p class="micro note-crumb">
-          <a href="/blog">NOTES</a> <span aria-hidden="true">/</span>
+          <a href={page('/blog')}>NOTES</a> <span aria-hidden="true">/</span>
           <time datetime={iso}>{iso}</time>
         </p>
 
@@ -125,8 +126,8 @@ const band = pickPull()
     <div class="note-foot">
       <div class="shell">
         <div class="note-foot-row">
-          <Button href="/blog" label="All notes" variant="secondary" />
-          <p class="micro note-foot-rss"><a href="/rss.xml">SUBSCRIBE VIA RSS</a></p>
+          <Button href={page('/blog')} label="All notes" variant="secondary" />
+          <p class="micro note-foot-rss"><a href={page('/rss.xml')}>SUBSCRIBE VIA RSS</a></p>
         </div>
       </div>
     </div>

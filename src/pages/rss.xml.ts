@@ -13,12 +13,12 @@ export async function GET(context: APIContext) {
   return rss({
     title: 'Notes by Tushar Chauhan',
     description: 'Notes on backend systems, streaming, orchestration and state.',
-    site: context.site ?? 'https://resume-site.pages.dev',
+    site: context.site ?? 'https://tushar2014.github.io',
     items: notes.map((note) => ({
       title: note.data.title,
       description: note.data.description,
       pubDate: note.data.pubDate,
-      link: `/blog/${note.id}`,
+      link: `${import.meta.env.BASE_URL}blog/${note.id}`,
     })),
     customData: '<language>en</language>',
     // The site is configured trailingSlash: 'never', so the feed must not append

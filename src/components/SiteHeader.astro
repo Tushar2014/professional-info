@@ -1,5 +1,6 @@
 ---
 import Plate from './Plate.astro'
+import { page } from '../lib/url'
 
 interface Props {
   /**
@@ -21,7 +22,7 @@ const onHome = here === '/'
 
 // On the homepage the section nav is a set of in page anchors. Everywhere else
 // the same seven anchors point back at the homepage.
-const prefix = onHome ? '' : '/'
+const prefix = onHome ? '' : page('/')
 
 /*
   Section anchors. Below 1400px only the three marked minimal survive, because
@@ -48,14 +49,14 @@ const sections = [
   short form is what ships below 1400px so the bar still fits a 320px phone.
 */
 const routes = [
-  { href: '/blog', short: 'NOTES', full: 'NOTES', area: 'writing' },
-  { href: '/resume', short: 'CV', full: 'RESUME', area: 'resume' },
+  { href: page('/blog'), short: 'NOTES', full: 'NOTES', area: 'writing' },
+  { href: page('/resume'), short: 'CV', full: 'RESUME', area: 'resume' },
 ]
 ---
 
 <header class="site-header">
   <div class="shell site-header-inner">
-    <a class="site-header-brand" href="/" aria-label="Tushar Chauhan, home">
+    <a class="site-header-brand" href={page('/')} aria-label="Tushar Chauhan, home">
       <Plate slug="tushar-chauhan" variant="monogram" />
       <span class="site-header-name">Tushar Chauhan</span>
       <span class="micro site-header-sub">BACKEND SYSTEMS</span>

@@ -4,6 +4,7 @@ import Pill from './Pill.astro'
 import Plate from './Plate.astro'
 import KeyValue from './KeyValue.astro'
 import Button from './Button.astro'
+import { page } from '../lib/url'
 
 interface Props {
   slug: string
@@ -42,7 +43,7 @@ const meta = [
           <div class="project-body">
             <p class="label">CASE STUDY</p>
             <h3>
-              <a href={`/projects/${slug}`}>{title}</a>
+              <a href={page(`/projects/${slug}`)}>{title}</a>
             </h3>
             <p class="text-small project-summary">{summary}</p>
             <KeyValue rows={meta} dense keyWidth="5.5rem" />
@@ -60,7 +61,7 @@ const meta = [
           <div class="project-body">
             <p class="label">CASE STUDY</p>
             <h3>
-              <a href={`/projects/${slug}`}>{title}</a>
+              <a href={page(`/projects/${slug}`)}>{title}</a>
             </h3>
             <p class="text-small project-summary">{summary}</p>
             <KeyValue rows={meta} dense keyWidth="5.5rem" />
