@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import sitemap from '@astrojs/sitemap'
 
 export default defineConfig({
-  site: 'https://tushar2014.github.io',
+  site: 'https://developer-tusharchauhan.github.io',
   base: '/professional-info',
   output: 'static',
   trailingSlash: 'never',
